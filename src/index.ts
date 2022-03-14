@@ -201,9 +201,7 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
     }
 
     const wasInside: number | null = getCol()?.data[geofence.name] || null;
-    const isInside = geoPointInPolygon([lon, lat], geojson.coordinates) as boolean;
-
-    platform.log({wasInside, isInside, name: geofence.name});
+    const isInside = geoPointInPolygon([lon, lat], geojson.coordinates[0]) as boolean;
 
     if (isInside && !wasInside) {
       platform.log(`${geofence.name} is now inside`);
