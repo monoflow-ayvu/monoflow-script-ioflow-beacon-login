@@ -31,7 +31,6 @@
           {
             "label": "Nome",
             "tableView": true,
-            "unique": true,
             "validate": {
               "required": true
             },
