@@ -139,7 +139,10 @@ messages.on('onInit', function () {
   platform.log('GPS script started');
 
   env.setData('GPS_REQUESTED', true);
+  // NOTE: some versions of the monoflow app need to have the GPS_REQUESTED downcased...
   env.setData('gps_requested', true);
+
+  // config for GPS requests
   env.setData('GPS_TIMEOUT', 1000 * 120);
   env.setData('GPS_MAXIMUM_AGE', 1000 * 120);
   env.setData('GPS_HIGH_ACCURACY', true);
@@ -158,8 +161,6 @@ function getCol(): CollectionDoc<GeofenceCol> | undefined {
 }
 
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
-  platform.log('GPS event', ev.getData());
-
   // Store GPS
   if (conf.get('saveGPS', false)) {
     // this event is re-built like this to keep backwards compatibility
@@ -193,6 +194,8 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
       platform.log(`Error while checking geofence ${geofence.name}: ${e.message}`);
       continue;
     }
+
+    platform.log('Checking geofence', geofence.name, geojson);
 
     const wasInside = getCol()?.data[geofence.name] || null;
     const isInside = geoPointInPolygon([lon, lat], geojson) as boolean;
