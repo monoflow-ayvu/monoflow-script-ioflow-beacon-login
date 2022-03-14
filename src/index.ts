@@ -157,6 +157,8 @@ function getCol(): CollectionDoc<GeofenceCol> | undefined {
 }
 
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
+  platform.log('GPS event', ev.getData());
+
   // Store GPS
   if (conf.get('saveGPS', false)) {
     // this event is re-built like this to keep backwards compatibility
