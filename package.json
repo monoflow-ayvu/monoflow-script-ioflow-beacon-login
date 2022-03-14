@@ -14,6 +14,14 @@
         "input": true
       },
       {
+        "label": "Habilitar geocercas?",
+        "tableView": false,
+        "key": "enableGeofences",
+        "type": "checkbox",
+        "input": true,
+        "defaultValue": false
+      },
+      {
         "label": "Geocercas",
         "reorder": false,
         "addAnotherPosition": "bottom",
@@ -22,9 +30,18 @@
         "initEmpty": false,
         "tableView": false,
         "defaultValue": [
-          {}
+          {
+            "name": "",
+            "kind": "default",
+            "wkt": ""
+          }
         ],
         "key": "geofences",
+        "conditional": {
+          "show": true,
+          "when": "enableGeofences",
+          "eq": "true"
+        },
         "type": "datagrid",
         "input": true,
         "components": [
@@ -32,8 +49,10 @@
             "label": "Nome",
             "tableView": true,
             "validate": {
-              "required": true
+              "required": true,
+              "unique": true
             },
+            "unique": true,
             "key": "name",
             "type": "textfield",
             "input": true
@@ -70,7 +89,6 @@
             "autoExpand": false,
             "tableView": true,
             "validate": {
-              "required": true,
               "custom": "valid = /^POLYGON(\\s+)?\\(.*\\)$/.test(input) ? true : 'Geocerca inválida';"
             },
             "key": "wkt",
@@ -92,7 +110,7 @@
             "key": "speedLimit",
             "conditional": {
               "show": true,
-              "when": "geofence.kind",
+              "when": "geofences.kind",
               "eq": "speedLimit"
             },
             "type": "number",

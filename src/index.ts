@@ -13,6 +13,7 @@ type GeofenceConfig = {
 // based on settingsSchema @ package.json
 type Config = {
   saveGPS: boolean;
+  enableGeofences: boolean;
   geofences: GeofenceConfig[];
 };
 const conf = new MonoUtils.config.Config<Config>();
@@ -169,6 +170,10 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
     }));
 
     env.project?.saveEvent(event);
+  }
+
+  if (!conf.get('enableGeofences', false)) {
+    return;
   }
 
   // check geofences
