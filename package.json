@@ -2,7 +2,115 @@
   "name": "gps",
   "version": "0.0.0",
   "description": "Script para GPS. Tracking GPS, geolocalización, geocercas, etc.",
-  "settingsSchema": {},
+  "settingsSchema": {
+    "display": "form",
+    "components": [
+      {
+        "label": "Salvar posições GPS?",
+        "tableView": false,
+        "defaultValue": true,
+        "key": "saveGPS",
+        "type": "checkbox",
+        "input": true
+      },
+      {
+        "label": "Geocercas",
+        "reorder": false,
+        "addAnotherPosition": "bottom",
+        "layoutFixed": false,
+        "enableRowGroups": false,
+        "initEmpty": false,
+        "tableView": false,
+        "defaultValue": [
+          {}
+        ],
+        "key": "geofences",
+        "type": "datagrid",
+        "input": true,
+        "components": [
+          {
+            "label": "Nome",
+            "tableView": true,
+            "unique": true,
+            "validate": {
+              "required": true
+            },
+            "key": "name",
+            "type": "textfield",
+            "input": true
+          },
+          {
+            "label": "Tipo",
+            "widget": "choicesjs",
+            "tableView": true,
+            "defaultValue": "default",
+            "data": {
+              "values": [
+                {
+                  "label": "Padrão",
+                  "value": "default"
+                },
+                {
+                  "label": "Velocidade Límite",
+                  "value": "speedLimit"
+                }
+              ]
+            },
+            "validate": {
+              "required": true
+            },
+            "key": "kind",
+            "type": "select",
+            "case": "lowercase",
+            "input": true
+          },
+          {
+            "label": "Geocerca WKT",
+            "placeholder": "POLYGON(...",
+            "tooltip": "Geocerca no formato WKT (Well-Known Text)",
+            "autoExpand": false,
+            "tableView": true,
+            "validate": {
+              "required": true,
+              "custom": "valid = /^POLYGON(\\s+)?\\(.*\\)$/.test(input) ? true : 'Geocerca inválida';"
+            },
+            "key": "wkt",
+            "type": "textarea",
+            "input": true
+          },
+          {
+            "label": "Velocidade límite",
+            "suffix": "KM/H",
+            "mask": false,
+            "tableView": false,
+            "delimiter": false,
+            "requireDecimal": false,
+            "inputFormat": "plain",
+            "truncateMultipleSpaces": false,
+            "validate": {
+              "required": true
+            },
+            "key": "speedLimit",
+            "conditional": {
+              "show": true,
+              "when": "geofence.kind",
+              "eq": "speedLimit"
+            },
+            "type": "number",
+            "input": true
+          }
+        ]
+      },
+      {
+        "type": "button",
+        "label": "Submit",
+        "key": "submit",
+        "disableOnInvalid": true,
+        "input": true,
+        "tableView": false
+      }
+    ]
+  },
   "license": "EULA",
   "private": true,
   "scripts": {
@@ -35,6 +143,7 @@
     "@types/firebase": "3.2.1",
     "@types/lodash": "4.14.179",
     "@types/uuid": "8.3.4",
+    "@types/wellknown": "^0.5.1",
     "babel-loader": "8.2.3",
     "brotli-webpack-plugin": "1.1.0",
     "commander": "^9.0.0",
@@ -56,7 +165,9 @@
     "@fermuch/telematree": "^9.20.0",
     "cross-fetch": "3.1.5",
     "firebase": "9.6.8",
+    "geo-point-in-polygon": "^1.0.0",
     "lodash": "4.17.21",
-    "mobx": "6.4.2"
+    "mobx": "6.4.2",
+    "wellknown": "^0.5.0"
   }
 }
