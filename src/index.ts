@@ -1,5 +1,5 @@
 import * as MonoUtils from "@fermuch/monoutils";
-import wellknown from 'wellknown';
+import wellknown, { GeoJSONGeometry, GeoJSONPolygon } from 'wellknown';
 import geoPointInPolygon from 'geo-point-in-polygon';
 import { CollectionDoc } from "@fermuch/telematree";
 
@@ -187,7 +187,7 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   const speed = ev.getData().speed * 3.6;
   
   for (const geofence of geofences) {
-    let geojson;
+    let geojson: GeoJSONGeometry | undefined;
     try {
       geojson = wellknown.parse(geofence.wkt);
     } catch (e) {
@@ -195,8 +195,13 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
       continue;
     }
 
+    if (geojson.type !== 'Polygon') {
+      platform.log(`Geofence ${geofence.name} is not a polygon`);
+      continue;
+    }
+
     const wasInside: number | null = getCol()?.data[geofence.name] || null;
-    const isInside = geoPointInPolygon([lon, lat], geojson) as boolean;
+    const isInside = geoPointInPolygon([lon, lat], geojson.coordinates) as boolean;
 
     platform.log({wasInside, isInside, name: geofence.name});
 
@@ -212,7 +217,7 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
 
     if (geofence.kind === 'speedLimit') {
       if (speed > geofence.speedLimit) {
-        platform.log(`Speed limit reached: ${geofence.speedLimit}`);
+        platform.log(`Speed limit reached: ${speed} km/h (limit: ${geofence.speedLimit} km/h)`);
         env.project?.saveEvent(new SpeedExcessEvent(geofence.name, ev.getData(), geofence.speedLimit));
       }
     }
