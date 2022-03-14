@@ -49,10 +49,8 @@
             "label": "Nome",
             "tableView": true,
             "validate": {
-              "required": true,
-              "unique": true
+              "required": true
             },
-            "unique": true,
             "key": "name",
             "type": "textfield",
             "input": true
