@@ -139,6 +139,7 @@ messages.on('onInit', function () {
   platform.log('GPS script started');
 
   env.setData('GPS_REQUESTED', true);
+  env.setData('gps_requested', true);
   env.setData('GPS_TIMEOUT', 1000 * 120);
   env.setData('GPS_MAXIMUM_AGE', 1000 * 120);
   env.setData('GPS_HIGH_ACCURACY', true);
