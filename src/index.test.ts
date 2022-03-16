@@ -1,3 +1,4 @@
+import * as MonoUtils from '@fermuch/monoutils';
 const read = require('fs').readFileSync;
 const join = require('path').join;
 
@@ -8,34 +9,19 @@ function loadScript() {
 }
 
 describe("onInit", () => {
-  // clean listeners
   afterEach(() => {
+    // clean listeners
     messages.removeAllListeners();
   });
 
-  it('runs without errors', () => {
+  it('loads the script correctly', () => {
     loadScript();
     messages.emit('onInit');
-  });
-
-  it('prints "Hello, default name!"', () => {
-    const log = jest.fn();
-    platform.log = log;
-
-    loadScript();
-
-    messages.emit('onInit');
-    expect(log).toHaveBeenCalledWith('Hello, default name!');
-  });
-
-  it('prints "Hello, custom name!" if given config', () => {
-    const log = jest.fn();
-    platform.log = log;
-    getSettings = () => ({ name: 'custom name' });
-
-    loadScript();
-
-    messages.emit('onInit');
-    expect(log).toHaveBeenCalledWith('Hello, custom name!');
-  });
+  })
+  xit('requests for GPS to be enabled', () => {});
+  xit('sets GPS configuration', () => {});
+  xit('emits custom-gps if saveGPS is enabled', () => {});
+  xit('emits GeofenceEvent when entering geofence if enableGeofences is enabled', () => {});
+  xit('emits GeofenceEvent when exiting geofence if enableGeofences is enabled', () => {});
+  xit('emits SpeedExcessEvent when speed is over the limit if enableSpeedExcess is enabled', () => {});
 });

@@ -3,7 +3,7 @@ import wellknown, { GeoJSONGeometry, GeoJSONPolygon } from 'wellknown';
 import geoPointInPolygon from 'geo-point-in-polygon';
 import { CollectionDoc } from "@fermuch/telematree";
 
-type GeofenceConfig = {
+export type GeofenceConfig = {
   name: string;
   kind: 'default' | 'speedLimit';
   wkt: string;
@@ -11,7 +11,7 @@ type GeofenceConfig = {
 }
 
 // based on settingsSchema @ package.json
-type Config = {
+export type Config = {
   saveGPS: boolean;
   enableGeofences: boolean;
   geofences: GeofenceConfig[];
