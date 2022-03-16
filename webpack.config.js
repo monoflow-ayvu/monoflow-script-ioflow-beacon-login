@@ -16,6 +16,7 @@ if (!fs.existsSync(distDir)) {
 }
 
 var babelOptions = {
+  sourceMap : "inline",
   presets: [
     ['@babel/env', {
       targets: {
@@ -35,7 +36,7 @@ var babelOptions = {
 module.exports = {
   entry: entryFile,
   target: 'es5',
-  // devtool: 'inline-source-map',
+  devtool: 'eval-source-map',
   module: {
     rules: [
       {

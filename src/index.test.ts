@@ -1,4 +1,5 @@
 import * as MonoUtils from '@fermuch/monoutils';
+import { GenericEvent } from '.';
 const read = require('fs').readFileSync;
 const join = require('path').join;
 
@@ -6,6 +7,29 @@ function loadScript() {
   // import global script
   const script = read(join(__dirname, '..', 'dist', 'bundle.js')).toString('utf-8');
   eval(script);
+}
+
+class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
+  kind = 'sensor-gps' as const;
+
+  constructor(
+    private readonly latitude = 1,
+    private readonly longitude = 1,
+  ) {
+    super();
+  }
+
+  getData() {
+    return {
+      latitude: this.latitude,
+      longitude: this.longitude,
+      altitude: 1,
+      accuracy: 1,
+      altitudeAccuracy: 1,
+      heading: 1,
+      speed: 1,
+    };
+  }
 }
 
 describe("onInit", () => {
@@ -18,10 +42,135 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
   })
-  xit('requests for GPS to be enabled', () => {});
-  xit('sets GPS configuration', () => {});
-  xit('emits custom-gps if saveGPS is enabled', () => {});
-  xit('emits GeofenceEvent when entering geofence if enableGeofences is enabled', () => {});
-  xit('emits GeofenceEvent when exiting geofence if enableGeofences is enabled', () => {});
-  xit('emits SpeedExcessEvent when speed is over the limit if enableSpeedExcess is enabled', () => {});
+
+  it('requests for GPS to be enabled', () => {
+    loadScript();
+    messages.emit('onInit');
+    expect(env.data.GPS_REQUESTED).toBe(true);
+  });
+
+  it('sets GPS configuration', () => {
+    loadScript();
+    messages.emit('onInit');
+    expect(env.data.GPS_TIMEOUT).toBeTruthy();
+    expect(env.data.GPS_MAXIMUM_AGE).toBeTruthy();
+    expect(env.data.GPS_HIGH_ACCURACY).toBeTruthy();
+    expect(env.data.GPS_DISTANCE_FILTER).toBeTruthy();
+    expect(env.data.GPS_USE_SIGNIFICANT_CHANGES).toBeTruthy();
+  });
+
+  it('emits custom-gps if saveGPS is enabled', () => {
+    getSettings = () => ({
+      saveGPS: true,
+    });
+    (env.project as any) = {
+      saveEvent: jest.fn(),
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
+
+    const saved = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[0][0] as GenericEvent<{}>;
+    expect(saved.kind).toBe('generic');
+    expect(saved.getData().type).toBe('custom-gps');
+  });
+
+  it('emits GeofenceEvent when entering and exiting geofence if enableGeofences is enabled', () => {
+    getSettings = () => ({
+      enableGeofences: true,
+      geofences: [{
+        name: 'testfence',
+        kind: 'default',
+        wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+      }]
+    });
+
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(colStore['testfence']).toBeTruthy();
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
+    const call = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[0];
+    expect(call[0].kind).toBe('geofence');
+    expect(call[0].getData().entering).toBe(true);
+    expect(call[0].getData().exiting).toBe(false);
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent(200, 200));
+
+    expect(colStore['testfence']).toBeFalsy();
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
+    const call2 = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[1];
+    expect(call2[0].kind).toBe('geofence');
+    expect(call2[0].getData().entering).toBe(false);
+    expect(call2[0].getData().exiting).toBe(true);
+  });
+
+  it('emits SpeedExcessEvent when speed is over the limit if enableSpeedExcess is enabled', () => {
+    getSettings = () => ({
+      enableGeofences: true,
+      geofences: [{
+        name: 'speedfence',
+        kind: 'speedLimit',
+        wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+        speedLimit: 0.42,
+      }]
+    });
+
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(colStore['speedfence']).toBeTruthy();
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
+    const call = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[0];
+    expect(call[0].kind).toBe('geofence');
+    expect(call[0].getData().entering).toBe(true);
+    expect(call[0].getData().exiting).toBe(false);
+
+    const call2 = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[1];
+    expect(call2[0].kind).toBe('speed-excess');
+    expect(call2[0].getData().gps.speed).toBe(1);
+    expect(call2[0].getData().speedLimit).toBe(0.42);
+  });
 });

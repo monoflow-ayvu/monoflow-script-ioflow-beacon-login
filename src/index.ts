@@ -31,7 +31,7 @@ declare class GPSSensorEvent extends MonoUtils.wk.event.BaseEvent {
   };
 }
 
-class GenericEvent<T> extends MonoUtils.wk.event.BaseEvent {
+export class GenericEvent<T> extends MonoUtils.wk.event.BaseEvent {
   kind = "generic";
   type: string;
   payload: T;
@@ -59,7 +59,7 @@ class GenericEvent<T> extends MonoUtils.wk.event.BaseEvent {
   }
 }
 
-class GeofenceEvent extends MonoUtils.wk.event.BaseEvent {
+export class GeofenceEvent extends MonoUtils.wk.event.BaseEvent {
   kind = 'geofence' as const;
   private name: string;
   private entering: boolean;
