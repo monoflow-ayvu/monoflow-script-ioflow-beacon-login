@@ -36,7 +36,7 @@ var babelOptions = {
 module.exports = {
   entry: entryFile,
   target: 'es5',
-  devtool: 'eval-source-map',
+  // devtool: 'eval-source-map',
   module: {
     rules: [
       {
