@@ -14,6 +14,19 @@
         "input": true
       },
       {
+        "label": "Cada quantos minutos salvar posições? (0 = salvar sempre)",
+        "tableView": false,
+        "defaultValue": true,
+        "key": "saveEveryMins",
+        "type": "number",
+        "conditional": {
+          "show": true,
+          "when": "saveGPS",
+          "eq": "true"
+        },
+        "input": true
+      },
+      {
         "label": "Habilitar geocercas?",
         "tableView": false,
         "key": "enableGeofences",
@@ -131,7 +144,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "watch": "webpack --mode production --watch",
-    "build-copy": "yarn build && (cat dist/bundle.js | pbcopy) && du -sh dist/*.js",
+    "build-copy": "pnpm build && (cat dist/bundle.js | pbcopy) && du -sh dist/*.js",
     "size": "npm run build && size-limit",
     "deploy": "node .scripts/deploy.js",
     "deploy-force": "node .scripts/deploy.js --force",

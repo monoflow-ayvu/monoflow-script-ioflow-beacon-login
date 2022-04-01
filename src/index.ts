@@ -13,6 +13,7 @@ export type GeofenceConfig = {
 // based on settingsSchema @ package.json
 export type Config = {
   saveGPS: boolean;
+  saveEveryMins: number;
   enableGeofences: boolean;
   geofences: GeofenceConfig[];
 };
@@ -173,7 +174,12 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
       login: MonoUtils.currentLogin() || false,
     }));
 
-    env.project?.saveEvent(event);
+    const saveEvery = conf.get('saveEveryMins', 0);
+    const lastGpsUpdate = Number(env.data.LAST_GPS_UPDATE || '0') || 0;
+    if (saveEvery === 0 || (Date.now() - lastGpsUpdate) > saveEvery * 60 * 1000) {
+      env.setData('LAST_GPS_UPDATE', Date.now());
+      env.project?.saveEvent(event);
+    }
   }
 
   if (!conf.get('enableGeofences', false)) {

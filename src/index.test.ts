@@ -33,9 +33,12 @@ class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
 }
 
 describe("onInit", () => {
+  jest.useFakeTimers('modern');
+
   afterEach(() => {
     // clean listeners
     messages.removeAllListeners();
+    env.setData('LAST_GPS_UPDATE', null);
   });
 
   it('loads the script correctly', () => {
@@ -75,6 +78,36 @@ describe("onInit", () => {
     const saved = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[0][0] as GenericEvent<{}>;
     expect(saved.kind).toBe('generic');
     expect(saved.getData().type).toBe('custom-gps');
+  });
+
+  it('sends only one update every X mins if saveEveryMins is set', () => {
+    getSettings = () => ({
+      saveGPS: true,
+      saveEveryMins: 1 / 60, // one second
+    });
+    (env.project as any) = {
+      saveEvent: jest.fn(),
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    jest.setSystemTime(new Date('2020-01-01 00:00:00'));
+    messages.emit('onEvent', new MockGPSEvent());
+    messages.emit('onEvent', new MockGPSEvent());
+    messages.emit('onEvent', new MockGPSEvent());
+    messages.emit('onEvent', new MockGPSEvent());
+    messages.emit('onEvent', new MockGPSEvent());
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
+    jest.setSystemTime(new Date('2020-01-01 00:00:01'));
+    messages.emit('onEvent', new MockGPSEvent());
+    messages.emit('onEvent', new MockGPSEvent());
+    messages.emit('onEvent', new MockGPSEvent());
+    expect(env.data.LAST_GPS_UPDATE).toBeGreaterThan(0);
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
+
+    jest.setSystemTime(new Date('2020-01-01 00:01:00'));
+    messages.emit('onEvent', new MockGPSEvent());
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
   });
 
   it('emits GeofenceEvent when entering and exiting geofence if enableGeofences is enabled', () => {
