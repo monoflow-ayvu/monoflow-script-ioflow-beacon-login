@@ -16,7 +16,16 @@
       {
         "label": "Cada quantos minutos salvar posições? (0 = salvar sempre)",
         "tableView": false,
-        "defaultValue": true,
+        "suffix": "Minutos",
+        "mask": false,
+        "defaultValue": 0,
+        "delimiter": false,
+        "requireDecimal": false,
+        "inputFormat": "plain",
+        "truncateMultipleSpaces": false,
+        "validate": {
+          "required": true
+        },
         "key": "saveEveryMins",
         "type": "number",
         "conditional": {
