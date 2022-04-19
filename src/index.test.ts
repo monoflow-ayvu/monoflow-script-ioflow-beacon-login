@@ -206,4 +206,39 @@ describe("onInit", () => {
     expect(call2[0].getData().gps.speed).toBe(1);
     expect(call2[0].getData().speedLimit).toBe(0.42);
   });
+
+  it('emits SpeedExcessEvent when speed is over the limit speedLimit is set', () => {
+    getSettings = () => ({
+      speedLimit: 0.42,
+    });
+
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
+    const call = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[0];
+    expect(call[0].kind).toBe('speed-excess');
+    expect(call[0].getData().name).toBe('default');
+    expect(call[0].getData().gps.speed).toBe(1);
+    expect(call[0].getData().speedLimit).toBe(0.42);
+  });
 });

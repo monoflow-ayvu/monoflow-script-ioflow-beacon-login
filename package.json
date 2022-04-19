@@ -6,6 +6,28 @@
     "display": "form",
     "components": [
       {
+        "label": "Velocidade límite (0 = nenha velocidade límite)",
+        "tableView": false,
+        "suffix": "KM/H",
+        "mask": false,
+        "defaultValue": 0,
+        "delimiter": false,
+        "requireDecimal": false,
+        "inputFormat": "plain",
+        "truncateMultipleSpaces": false,
+        "validate": {
+          "required": true
+        },
+        "key": "speedLimit",
+        "type": "number",
+        "conditional": {
+          "show": true,
+          "when": "saveGPS",
+          "eq": "true"
+        },
+        "input": true
+      },
+      {
         "label": "Salvar posições GPS?",
         "tableView": false,
         "defaultValue": true,

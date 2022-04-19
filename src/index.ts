@@ -16,6 +16,7 @@ export type Config = {
   saveEveryMins: number;
   enableGeofences: boolean;
   geofences: GeofenceConfig[];
+  speedLimit: number;
 };
 const conf = new MonoUtils.config.Config<Config>();
 
@@ -179,6 +180,14 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
     if (saveEvery === 0 || (Date.now() - lastGpsUpdate) > saveEvery * 60 * 1000) {
       env.setData('LAST_GPS_UPDATE', Date.now());
       env.project?.saveEvent(event);
+    }
+  }
+
+  const speedLimit = conf.get('speedLimit', 0);
+  if (speedLimit > 0) {
+    const speed = ev.getData().speed * 3.6;
+    if (speed > speedLimit) {
+      env.project?.saveEvent(new SpeedExcessEvent('default', ev.getData(), speedLimit));
     }
   }
 
