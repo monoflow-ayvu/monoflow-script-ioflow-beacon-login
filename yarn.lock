@@ -2281,10 +2281,10 @@
   resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.4.tgz#bd86a43617df0594787d38b735f55c805becf1bc"
   integrity sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==
 
-"@types/wellknown@0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@types/wellknown/-/wellknown-0.5.1.tgz#4fdf9a9a21e78b640e7c60b7b6857165153d6a9d"
-  integrity sha512-Q654r/2cjmh4XdFcZbRUKrY9Z3KmJJhXGQ4snwjWJCNrDNsNCJRaKQZRd/KPJaNGC0gZUxcmAu7184JpDX2Sjw==
+"@types/wellknown@0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@types/wellknown/-/wellknown-0.5.2.tgz#80fa451d4278fb290c10e3d737922d79abcf1e90"
+  integrity sha512-V54G1z5CND4oHJark1OGeaxSeYf+HpOFuKiLYPunHmWCfBBo4BYMJ+vhANof3Ged2rm5j1vd8DxX8msMLmLXZA==
 
 "@types/yargs-parser@*":
   version "21.0.0"
