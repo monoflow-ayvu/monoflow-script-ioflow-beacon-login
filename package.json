@@ -205,7 +205,7 @@
     "@types/jest": "27.5.1",
     "@types/lodash": "4.14.182",
     "@types/uuid": "8.3.4",
-    "@types/wellknown": "0.5.2",
+    "@types/wellknown": "0.5.3",
     "babel-loader": "8.2.5",
     "brotli-webpack-plugin": "1.1.0",
     "commander": "9.2.0",
