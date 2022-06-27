@@ -230,7 +230,7 @@
     "firebase": "9.8.4",
     "geo-point-in-polygon": "1.0.0",
     "lodash": "4.17.21",
-    "mobx": "6.6.0",
+    "mobx": "6.6.1",
     "wellknown": "0.5.0"
   },
   "jest": {
