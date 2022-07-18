@@ -154,7 +154,7 @@ messages.on('onInit', function () {
   if (conf.get('schedule', []).length > 0) {
     const schedule = conf.get('schedule', []).reduce((acc, sch) => {
       acc.push(
-        `${sch.day.join(',')} ${sch.startTime}:${sch.endTime}`
+        `${sch.day.join(',')} ${sch.startTime}-${sch.endTime}`
       )
       return acc;
     }, [] as string[])
