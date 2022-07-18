@@ -17,6 +17,9 @@ export type Config = {
   enableGeofences: boolean;
   geofences: GeofenceConfig[];
   speedLimit: number;
+
+  highAccuracy: boolean;
+  schedule: {day: string[]; startTime: string; endTime: string}[];
 };
 const conf = new MonoUtils.config.Config<Config>();
 
@@ -140,16 +143,30 @@ class SpeedExcessEvent extends MonoUtils.wk.event.BaseEvent {
 messages.on('onInit', function () {
   platform.log('GPS script started');
 
-  env.setData('GPS_REQUESTED', true);
-  // NOTE: some versions of the monoflow app need to have the GPS_REQUESTED downcased...
-  env.setData('gps_requested', true);
-
   // config for GPS requests
   env.setData('GPS_TIMEOUT', 1000 * 120);
   env.setData('GPS_MAXIMUM_AGE', 1000 * 120);
-  env.setData('GPS_HIGH_ACCURACY', true);
+  env.setData('GPS_HIGH_ACCURACY', conf.get('highAccuracy', true));
   env.setData('GPS_DISTANCE_FILTER', 5);
   env.setData('GPS_USE_SIGNIFICANT_CHANGES', true);
+
+  // set schedule if it exists
+  if (conf.get('schedule', []).length > 0) {
+    const schedule = conf.get('schedule', []).reduce((acc, sch) => {
+      acc.push(
+        `${sch.day.join(',')} ${sch.startTime}:${sch.endTime}`
+      )
+      return acc;
+    }, [] as string[])
+    env.setData('GPS_SCHEDULE', schedule);
+  } else {
+    env.setData('GPS_SCHEDULE', undefined);
+  }
+
+  // request GPS activation
+  env.setData('GPS_REQUESTED', true);
+  // NOTE: some versions of the monoflow app need to have the GPS_REQUESTED downcased...
+  env.setData('gps_requested', true);
 });
 
 type GeofenceCol = {

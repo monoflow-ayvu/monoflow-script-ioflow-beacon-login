@@ -6,10 +6,10 @@
     "display": "form",
     "components": [
       {
-        "label": "Velocidade límite (0 = nenha velocidade límite)",
-        "tableView": false,
+        "label": "Velocidade límite (0 = desativar velocidade límite)",
         "suffix": "KM/H",
         "mask": false,
+        "tableView": false,
         "defaultValue": 0,
         "delimiter": false,
         "requireDecimal": false,
@@ -19,12 +19,12 @@
           "required": true
         },
         "key": "speedLimit",
-        "type": "number",
         "conditional": {
           "show": true,
           "when": "saveGPS",
           "eq": "true"
         },
+        "type": "number",
         "input": true
       },
       {
@@ -36,10 +36,19 @@
         "input": true
       },
       {
-        "label": "Cada quantos minutos salvar posições? (0 = salvar sempre)",
+        "label": "Modo alta precisão?",
+        "description": "Modo alta precisão usa mais bateria.",
         "tableView": false,
+        "defaultValue": true,
+        "key": "highAccuracy",
+        "type": "checkbox",
+        "input": true
+      },
+      {
+        "label": "Cada quantos minutos salvar posições? (0 = salvar sempre que tiver uma)",
         "suffix": "Minutos",
         "mask": false,
+        "tableView": false,
         "defaultValue": 0,
         "delimiter": false,
         "requireDecimal": false,
@@ -49,12 +58,12 @@
           "required": true
         },
         "key": "saveEveryMins",
-        "type": "number",
         "conditional": {
           "show": true,
           "when": "saveGPS",
           "eq": "true"
         },
+        "type": "number",
         "input": true
       },
       {
@@ -156,6 +165,94 @@
               "eq": "speedLimit"
             },
             "type": "number",
+            "input": true
+          }
+        ]
+      },
+      {
+        "label": "Cronograma",
+        "tooltip": "Se não tiver cronograma, os dados são coletados 24/7.",
+        "reorder": false,
+        "addAnother": "Adicionar",
+        "addAnotherPosition": "bottom",
+        "layoutFixed": false,
+        "enableRowGroups": false,
+        "initEmpty": true,
+        "tableView": false,
+        "defaultValue": [
+          {
+            "diaS": [],
+            "startTime": "",
+            "endTime": "",
+            "day": []
+          }
+        ],
+        "key": "schedule",
+        "type": "datagrid",
+        "input": true,
+        "components": [
+          {
+            "label": "Dia(s)",
+            "widget": "choicesjs",
+            "tableView": true,
+            "multiple": true,
+            "data": {
+              "values": [
+                {
+                  "label": "Domingo",
+                  "value": "1"
+                },
+                {
+                  "label": "Segunda-feira",
+                  "value": "2"
+                },
+                {
+                  "label": "Terça-feira",
+                  "value": "3"
+                },
+                {
+                  "label": "Quarta-feira",
+                  "value": "4"
+                },
+                {
+                  "label": "Quinta-feira",
+                  "value": "5"
+                },
+                {
+                  "label": "Sexta-feira",
+                  "value": "6"
+                },
+                {
+                  "label": "Sábado",
+                  "value": "7"
+                }
+              ]
+            },
+            "dataType": "string",
+            "key": "day",
+            "type": "select",
+            "input": true
+          },
+          {
+            "label": "Inicio",
+            "tooltip": "Formato 24 horas",
+            "suffix": "hs",
+            "inputMask": "99:99",
+            "displayMask": "99:99",
+            "tableView": true,
+            "key": "startTime",
+            "type": "textfield",
+            "input": true
+          },
+          {
+            "label": "Fim",
+            "tooltip": "Formato 24 horas",
+            "suffix": "hs",
+            "inputMask": "99:99",
+            "displayMask": "99:99",
+            "tableView": true,
+            "key": "endTime",
+            "type": "textfield",
             "input": true
           }
         ]
