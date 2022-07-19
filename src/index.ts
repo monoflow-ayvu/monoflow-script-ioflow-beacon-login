@@ -3,6 +3,7 @@ import wellknown, { GeoJSONGeometry, GeoJSONPolygon } from 'wellknown';
 import geoPointInPolygon from 'geo-point-in-polygon';
 import { CollectionDoc } from "@fermuch/telematree";
 import { currentLogin, myID } from "@fermuch/monoutils";
+import { setUrgentNotification } from "./utils";
 
 export type GeofenceConfig = {
   name: string;
@@ -25,6 +26,8 @@ export type Config = {
   warnUserOverspeed: boolean;
 };
 const conf = new MonoUtils.config.Config<Config>();
+
+const ACTION_OK_OVERSPEED = 'gps-overspeed:ok' as const;
 
 declare class GPSSensorEvent extends MonoUtils.wk.event.BaseEvent {
   kind: "sensor-gps";
@@ -193,6 +196,35 @@ function getCol(): CollectionDoc<GeofenceCol> | undefined {
   return col.get(MonoUtils.myID());
 }
 
+function onSpeedExcess(ev: GPSSensorEvent, geofence?: GeofenceConfig) {
+  // setUrgentNotification
+
+  const speed = (ev?.gps?.speed || 0) * 3.6;
+  const speedLimit = geofence?.speedLimit || conf.get('speedLimit', 0) || 0;
+  platform.log(`Speed limit reached: ${speed} km/h (limit: ${speedLimit} km/h)`);
+  env.project?.saveEvent(
+    new SpeedExcessEvent(
+      geofence?.name || 'default',
+      ev.getData(),
+      speedLimit
+    )
+  );
+
+  if (conf.get('warnUserOverspeed', false)) {
+    setUrgentNotification({
+      title: 'Límite de velocidade',
+      color: '#d4c224',
+      message: 'Foi detectado um excesso de velocidade',
+      urgent: true,
+      actions: [{
+        action: ACTION_OK_OVERSPEED,
+        name: 'OK',
+        payload: {},
+      }]
+    })
+  }
+}
+
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   // Store GPS
   if (conf.get('saveGPS', false)) {
@@ -218,7 +250,7 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   if (speedLimit > 0) {
     const speed = ev.getData().speed * 3.6;
     if (speed > speedLimit) {
-      env.project?.saveEvent(new SpeedExcessEvent('default', ev.getData(), speedLimit));
+      onSpeedExcess(ev);
     }
   }
 
@@ -266,9 +298,16 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
 
     if (geofence.kind === 'speedLimit') {
       if (speed > geofence.speedLimit) {
-        platform.log(`Speed limit reached: ${speed} km/h (limit: ${geofence.speedLimit} km/h)`);
-        env.project?.saveEvent(new SpeedExcessEvent(geofence.name, ev.getData(), geofence.speedLimit));
+        onSpeedExcess(ev, geofence);
       }
     }
   }
 });
+
+messages.on('onCall', (actId, _payload) => {
+  if (actId !== ACTION_OK_OVERSPEED) {
+    return;
+  }
+
+  setUrgentNotification(null);
+})
