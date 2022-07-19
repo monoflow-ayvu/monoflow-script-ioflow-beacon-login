@@ -2,12 +2,14 @@ import * as MonoUtils from "@fermuch/monoutils";
 import wellknown, { GeoJSONGeometry, GeoJSONPolygon } from 'wellknown';
 import geoPointInPolygon from 'geo-point-in-polygon';
 import { CollectionDoc } from "@fermuch/telematree";
+import { currentLogin, myID } from "@fermuch/monoutils";
 
 export type GeofenceConfig = {
   name: string;
   kind: 'default' | 'speedLimit';
   wkt: string;
   speedLimit?: number;
+  tags?: string[];
 }
 
 // based on settingsSchema @ package.json
@@ -20,6 +22,7 @@ export type Config = {
 
   highAccuracy: boolean;
   schedule: {day: string[]; startTime: string; endTime: string}[];
+  warnUserOverspeed: boolean;
 };
 const conf = new MonoUtils.config.Config<Config>();
 
@@ -140,6 +143,17 @@ class SpeedExcessEvent extends MonoUtils.wk.event.BaseEvent {
   }
 }
 
+function anyTagMatches(tags: string[]): boolean {
+  // we always match if there are no tags
+  if (!tags || tags.length === 0) return true;
+
+  const userTags = env.project?.logins?.find((login) => login.key === currentLogin())?.tags || [];
+  const deviceTags = env.project?.usersManager?.users?.find?.((u) => u.$modelId === myID())?.tags || [];
+  const allTags = [...userTags, ...deviceTags];
+
+  return tags.some((t) => allTags.includes(t));
+}
+
 messages.on('onInit', function () {
   platform.log('GPS script started');
 
@@ -229,6 +243,11 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
 
     if (geojson.type !== 'Polygon') {
       platform.log(`Geofence ${geofence.name} is not a polygon`);
+      continue;
+    }
+
+    const matchesOurDevice = anyTagMatches(geofence.tags || []);
+    if (!matchesOurDevice) {
       continue;
     }
 

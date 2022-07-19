@@ -28,6 +28,14 @@
         "input": true
       },
       {
+        "label": "Alertar ao usuario ao ter um excesso de velocidade?",
+        "tableView": false,
+        "key": "warnUserOverspeed",
+        "type": "checkbox",
+        "input": true,
+        "defaultValue": false
+      },
+      {
         "label": "Salvar posições GPS?",
         "tableView": false,
         "defaultValue": true,
@@ -165,6 +173,15 @@
               "eq": "speedLimit"
             },
             "type": "number",
+            "input": true
+          },
+          {
+            "label": "Tags",
+            "tooltip": "Se pelo menos uma tag é inclusa no dispositivo, login, ou dado do usuario, a geocerca é usada com o dispositivo.\n\nSe não tiver tag, a geocerca é aplicada para todos os dispositivos.",
+            "tableView": false,
+            "storeas": "array",
+            "key": "tags",
+            "type": "tags",
             "input": true
           }
         ]

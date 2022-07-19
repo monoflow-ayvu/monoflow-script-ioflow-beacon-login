@@ -161,6 +161,114 @@ describe("onInit", () => {
     expect(call2[0].getData().exiting).toBe(true);
   });
 
+  it('emits GeofenceEvent when entering and exiting geofence if any geofence tag matches', () => {
+    getSettings = () => ({
+      enableGeofences: true,
+      geofences: [{
+        name: 'testfence',
+        kind: 'default',
+        wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+        tags: ['foo', 'bar', 'zaz']
+      }]
+    });
+
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn(),
+      usersManager: {
+        users: [{
+          $modelId: 'TEST',
+          tags: ['zaz'],
+        }]
+      }
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(colStore['testfence']).toBeTruthy();
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
+    const call = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[0];
+    expect(call[0].kind).toBe('geofence');
+    expect(call[0].getData().entering).toBe(true);
+    expect(call[0].getData().exiting).toBe(false);
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent(200, 200));
+
+    expect(colStore['testfence']).toBeFalsy();
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
+    const call2 = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[1];
+    expect(call2[0].kind).toBe('geofence');
+    expect(call2[0].getData().entering).toBe(false);
+    expect(call2[0].getData().exiting).toBe(true);
+  });
+
+  it('does NOT emit GeofenceEvent when entering and exiting geofence if no geofence tag matches', () => {
+    getSettings = () => ({
+      enableGeofences: true,
+      geofences: [{
+        name: 'testfence',
+        kind: 'default',
+        wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+        tags: ['foo', 'bar', 'zaz']
+      }]
+    });
+
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn(),
+      usersManager: {
+        users: [{
+          $modelId: 'TEST',
+          tags: ['some-other-tag'],
+        }]
+      }
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(colStore['testfence']).not.toBeDefined();
+    expect(env.project.saveEvent).not.toHaveBeenCalledTimes(1);
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent(200, 200));
+
+    expect(colStore['testfence']).not.toBeDefined();
+    expect(env.project.saveEvent).not.toHaveBeenCalledTimes(2);
+  });
+
   it('emits SpeedExcessEvent when speed is over the limit if enableSpeedExcess is enabled', () => {
     getSettings = () => ({
       enableGeofences: true,
