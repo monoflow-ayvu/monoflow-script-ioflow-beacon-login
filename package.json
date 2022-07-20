@@ -36,6 +36,19 @@
         "defaultValue": false
       },
       {
+        "label": "Parar alerta automaticamente se a velocidad descer do límite?",
+        "tableView": false,
+        "key": "autoDisableOverSpeedAlert",
+        "conditional": {
+          "show": true,
+          "when": "warnUserOverspeed",
+          "eq": "true"
+        },
+        "type": "checkbox",
+        "input": true,
+        "defaultValue": true
+      },
+      {
         "label": "Salvar posições GPS?",
         "tableView": false,
         "defaultValue": true,

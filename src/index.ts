@@ -3,7 +3,7 @@ import wellknown, { GeoJSONGeometry, GeoJSONPolygon } from 'wellknown';
 import geoPointInPolygon from 'geo-point-in-polygon';
 import { CollectionDoc } from "@fermuch/telematree";
 import { currentLogin, myID } from "@fermuch/monoutils";
-import { setUrgentNotification } from "./utils";
+import { getUrgentNotification, setUrgentNotification } from "./utils";
 
 export type GeofenceConfig = {
   name: string;
@@ -24,6 +24,7 @@ export type Config = {
   highAccuracy: boolean;
   schedule: {day: string[]; startTime: string; endTime: string}[];
   warnUserOverspeed: boolean;
+  autoDisableOverSpeedAlert: boolean;
 };
 const conf = new MonoUtils.config.Config<Config>();
 
@@ -197,8 +198,6 @@ function getCol(): CollectionDoc<GeofenceCol> | undefined {
 }
 
 function onSpeedExcess(ev: GPSSensorEvent, geofence?: GeofenceConfig) {
-  // setUrgentNotification
-
   const speed = (ev?.gps?.speed || 0) * 3.6;
   const speedLimit = geofence?.speedLimit || conf.get('speedLimit', 0) || 0;
   platform.log(`Speed limit reached: ${speed} km/h (limit: ${speedLimit} km/h)`);
@@ -225,6 +224,20 @@ function onSpeedExcess(ev: GPSSensorEvent, geofence?: GeofenceConfig) {
   }
 }
 
+function clearAlert() {
+  if (conf.get('autoDisableOverSpeedAlert', true) === false) {
+    return;
+  }
+
+  const notif = getUrgentNotification();
+  if (!notif) return;
+
+  const isOverspeed = notif.actions?.some((n) => n.action === ACTION_OK_OVERSPEED);
+  if (isOverspeed) {
+    setUrgentNotification(null);
+  }
+}
+
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   // Store GPS
   if (conf.get('saveGPS', false)) {
@@ -246,15 +259,20 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
     }
   }
 
+  let hadSpeedExcess = false;
   const speedLimit = conf.get('speedLimit', 0);
   if (speedLimit > 0) {
     const speed = ev.getData().speed * 3.6;
     if (speed > speedLimit) {
       onSpeedExcess(ev);
+      hadSpeedExcess = true;
     }
   }
 
   if (!conf.get('enableGeofences', false)) {
+    if (!hadSpeedExcess) {
+      clearAlert();
+    }
     return;
   }
 
@@ -298,9 +316,14 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
 
     if (geofence.kind === 'speedLimit') {
       if (speed > geofence.speedLimit) {
+        hadSpeedExcess = true;
         onSpeedExcess(ev, geofence);
       }
     }
+  }
+
+  if (!hadSpeedExcess) {
+    clearAlert();
   }
 });
 
