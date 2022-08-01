@@ -143,6 +143,14 @@
                 {
                   "label": "Velocidade Límite",
                   "value": "speedLimit"
+                },
+                {
+                  "label": "Abrir form",
+                  "value": "openForm"
+                },
+                {
+                  "label": "Abrir tarefa",
+                  "value": "openTask"
                 }
               ]
             },
@@ -196,6 +204,44 @@
             "key": "tags",
             "type": "tags",
             "input": true
+          },
+          {
+            "label": "ID Tarefa/Form",
+            "autoExpand": false,
+            "tableView": true,
+            "truncateMultipleSpaces": true,
+            "validate": {
+              "required": true
+            },
+            "key": "id",
+            "customConditional": "show = row.kind === 'openForm' || row.kind === 'openTask';",
+            "type": "textfield",
+            "input": true
+          },
+          {
+            "label": "Quando ativar",
+            "optionsLabelPosition": "right",
+            "tableView": false,
+            "values": [
+              {
+                "label": "Ao sair",
+                "value": "onExit",
+                "shortcut": ""
+              },
+              {
+                "label": "Ao entrar",
+                "value": "onEnter",
+                "shortcut": ""
+              }
+            ],
+            "validate": {
+              "required": true
+            },
+            "key": "when",
+            "customConditional": "show = row.kind === 'openForm' || row.kind === 'openTask';",
+            "type": "selectboxes",
+            "input": true,
+            "inputType": "checkbox"
           }
         ]
       },

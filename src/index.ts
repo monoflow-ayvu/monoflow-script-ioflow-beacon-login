@@ -7,10 +7,12 @@ import { getUrgentNotification, setUrgentNotification } from "./utils";
 
 export type GeofenceConfig = {
   name: string;
-  kind: 'default' | 'speedLimit';
+  kind: 'default' | 'speedLimit' | 'openForm' | 'openTask';
   wkt: string;
   speedLimit?: number;
   tags?: string[];
+  id?: string;
+  when?: {onEnter: boolean; onExit: boolean};
 }
 
 // based on settingsSchema @ package.json
@@ -156,6 +158,37 @@ function anyTagMatches(tags: string[]): boolean {
   const allTags = [...userTags, ...deviceTags];
 
   return tags.some((t) => allTags.includes(t));
+}
+
+function tryOpenTaskOrForm(geofence: GeofenceConfig, isOnEnter: boolean) {
+  if (geofence.kind !== 'openForm' && geofence.kind !== 'openTask') {
+    return;
+  }
+
+  if (!currentLogin()) {
+    return;
+  }
+
+  if (env.data.CURRENT_PAGE === 'Submit') {
+    return;
+  }
+
+  if (isOnEnter && !geofence.when.onEnter) {
+    return;
+  }
+
+  if (!isOnEnter && !geofence.when.onExit) {
+    return;
+  }
+
+  if (!('goToSubmit' in platform)) {
+    return;
+  }
+
+  (platform as unknown as { gotToSubmit: (formId?: string, taskId?: string) => void })?.gotToSubmit?.(
+    geofence.kind === 'openForm' ? geofence.id : '',
+    geofence.kind === 'openTask' ? geofence.id : ''
+  );
 }
 
 messages.on('onInit', function () {
@@ -308,10 +341,12 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
       platform.log(`${geofence.name} is now inside`);
       getCol()?.set(geofence.name, Date.now());
       env.project?.saveEvent(new GeofenceEvent(geofence.name, true, ev.getData(), null));
+      tryOpenTaskOrForm(geofence, true);
     } else if (!isInside && wasInside) {
       platform.log(`${geofence.name} is now outside`);
       getCol()?.set(geofence.name, null);
       env.project?.saveEvent(new GeofenceEvent(geofence.name, false, ev.getData(), wasInside));
+      tryOpenTaskOrForm(geofence, false);
     }
 
     if (geofence.kind === 'speedLimit') {
