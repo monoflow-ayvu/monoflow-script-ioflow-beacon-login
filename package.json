@@ -234,9 +234,6 @@
                 "shortcut": ""
               }
             ],
-            "validate": {
-              "required": true
-            },
             "key": "when",
             "customConditional": "show = row.kind === 'openForm' || row.kind === 'openTask';",
             "type": "selectboxes",
