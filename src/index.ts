@@ -182,9 +182,11 @@ function tryOpenTaskOrForm(geofence: GeofenceConfig, isOnEnter: boolean) {
   }
 
   if (!('goToSubmit' in platform)) {
+    platform.log('no goToSubmit platform tool available');
     return;
   }
 
+  platform.log(`showing ${geofence.kind === 'openForm' ? 'form' : 'task'}: ${geofence.id}`);
   (platform as unknown as { gotToSubmit: (formId?: string, taskId?: string) => void })?.gotToSubmit?.(
     geofence.kind === 'openForm' ? geofence.id : '',
     geofence.kind === 'openTask' ? geofence.id : ''
