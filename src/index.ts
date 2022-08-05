@@ -1,9 +1,11 @@
 import * as MonoUtils from "@fermuch/monoutils";
-import wellknown, { GeoJSONGeometry, GeoJSONPolygon } from 'wellknown';
+import wellknown, { GeoJSONGeometry } from 'wellknown';
 import geoPointInPolygon from 'geo-point-in-polygon';
 import { CollectionDoc } from "@fermuch/telematree";
 import { currentLogin, myID } from "@fermuch/monoutils";
 import { getUrgentNotification, setUrgentNotification } from "./utils";
+
+// -29.9365773,-50.9160181
 
 export type GeofenceConfig = {
   name: string;
@@ -351,7 +353,7 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
       tryOpenTaskOrForm(geofence, false);
     }
 
-    if (geofence.kind === 'speedLimit') {
+    if (isInside && geofence.kind === 'speedLimit') {
       if (speed > geofence.speedLimit) {
         hadSpeedExcess = true;
         onSpeedExcess(ev, geofence);
