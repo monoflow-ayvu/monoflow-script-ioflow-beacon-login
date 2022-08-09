@@ -350,3 +350,110 @@ describe("onInit", () => {
     expect(call[0].getData().speedLimit).toBe(0.42);
   });
 });
+
+describe('impossible values', () => {
+  afterEach(() => {
+    messages.removeAllListeners();
+  })
+
+  it('does not block normal events when speed is normal', () => {
+    getSettings = () => ({
+      speedLimit: 0.42,
+      impossible: [{
+        tags: [],
+        maxSpeed: 99999,
+      }],
+    });
+
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: jest.fn(),
+      },
+      saveEvent: jest.fn()
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(env.project.saveEvent).toHaveBeenCalled();
+  });
+
+  it('applies to all gps events when no tag is set', () => {
+    getSettings = () => ({
+      speedLimit: 0.00001,
+      impossible: [{
+        tags: [],
+        maxSpeed: 0.1,
+      }],
+    });
+
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: jest.fn(),
+      },
+      saveEvent: jest.fn()
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(env.project.saveEvent).not.toHaveBeenCalled();
+  });
+
+  describe('applies speedlimit only to device tags', () => {
+    beforeAll(() => {
+      getSettings = () => ({
+        speedLimit: 0.00001,
+        impossible: [{
+          tags: ['impossible-tag'],
+          maxSpeed: 0.1,
+        }],
+      });
+    })
+
+    it('does not apply to untagged devices', () => {
+      (env.project as any) = {
+        collectionsManager: {
+          ensureExists: jest.fn(),
+        },
+        saveEvent: jest.fn(),
+        usersManager: {
+          users: [{
+            $modelId: 'TEST',
+            tags: [],
+          }]
+        }
+      };
+  
+      loadScript();
+      messages.emit('onInit');
+      messages.emit('onEvent', new MockGPSEvent());
+  
+      // only 
+      expect(env.project.saveEvent).toHaveBeenCalled();
+    });
+
+    it('applies to matching tagged devices', () => {
+      (env.project as any) = {
+        collectionsManager: {
+          ensureExists: jest.fn(),
+        },
+        saveEvent: jest.fn(),
+        usersManager: {
+          users: [{
+            $modelId: 'TEST',
+            tags: ['impossible-tag'],
+          }]
+        }
+      };
+
+      loadScript();
+      messages.emit('onInit');
+      messages.emit('onEvent', new MockGPSEvent());
+
+      expect(env.project.saveEvent).not.toHaveBeenCalled();
+    });
+  });
+})

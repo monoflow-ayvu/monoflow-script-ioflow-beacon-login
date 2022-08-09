@@ -5,7 +5,10 @@ import { CollectionDoc } from "@fermuch/telematree";
 import { currentLogin, myID } from "@fermuch/monoutils";
 import { getUrgentNotification, setUrgentNotification } from "./utils";
 
-// -29.9365773,-50.9160181
+export type ImpossibleConfig = {
+  tags: string[];
+  maxSpeed: number;
+}
 
 export type GeofenceConfig = {
   name: string;
@@ -29,6 +32,8 @@ export type Config = {
   schedule: {day: string[]; startTime: string; endTime: string}[];
   warnUserOverspeed: boolean;
   autoDisableOverSpeedAlert: boolean;
+
+  impossible: ImpossibleConfig[];
 };
 const conf = new MonoUtils.config.Config<Config>();
 
@@ -276,6 +281,27 @@ function clearAlert() {
 }
 
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
+  const speed = ev.getData().speed * 3.6;
+  const lat = ev.getData().latitude;
+  const lon = ev.getData().longitude;
+
+  const impossibleRules = conf.get('impossible', []);
+  for (const impRule of impossibleRules) {
+    platform.log('evaluating rule', impRule);
+    // for now we only check for speed, so if no speed is giving we ignore the rule
+    if (impRule.maxSpeed === 0) continue;
+
+    // check for global rules
+    if ((impRule.tags || []).length === 0 && speed > impRule.maxSpeed) {
+      return; // cancel this event
+    }
+
+    // tagged rules
+    if (anyTagMatches(impRule.tags) && speed > impRule.maxSpeed) {
+      return; // cancel this event
+    }
+  }
+
   // Store GPS
   if (conf.get('saveGPS', false)) {
     // this event is re-built like this to keep backwards compatibility
@@ -299,7 +325,6 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   let hadSpeedExcess = false;
   const speedLimit = conf.get('speedLimit', 0);
   if (speedLimit > 0) {
-    const speed = ev.getData().speed * 3.6;
     if (speed > speedLimit) {
       onSpeedExcess(ev);
       hadSpeedExcess = true;
@@ -315,9 +340,6 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
 
   // check geofences
   const geofences = conf.get('geofences', []);
-  const lat = ev.getData().latitude;
-  const lon = ev.getData().longitude;
-  const speed = ev.getData().speed * 3.6;
   
   for (const geofence of geofences) {
     let geojson: GeoJSONGeometry | undefined;
