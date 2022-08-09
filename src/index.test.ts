@@ -354,7 +354,7 @@ describe("onInit", () => {
 describe('impossible values', () => {
   afterEach(() => {
     messages.removeAllListeners();
-  })
+  });
 
   it('does not block normal events when speed is normal', () => {
     getSettings = () => ({

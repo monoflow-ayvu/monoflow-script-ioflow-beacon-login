@@ -331,6 +331,53 @@
         ]
       },
       {
+        "label": "Impossibilidades",
+        "tooltip": "Configurações para dados que sejam impossíveis de reportar físicamente pelos dispositivos.",
+        "reorder": true,
+        "addAnother": "Adicionar",
+        "addAnotherPosition": "bottom",
+        "layoutFixed": false,
+        "enableRowGroups": false,
+        "initEmpty": true,
+        "tableView": false,
+        "defaultValue": [
+          {
+            "tags": []
+          }
+        ],
+        "key": "impossible",
+        "type": "datagrid",
+        "input": true,
+        "components": [
+          {
+            "label": "Tags",
+            "tooltip": "Se pelo menos uma tag é inclusa no dispositivo, login, ou dado do usuario, a impossibilidade é usada com o dispositivo.\n\nSe NÃO tiver tag, a impossibilidade é aplicada para TODOS os dispositivos.",
+            "tableView": false,
+            "storeas": "array",
+            "key": "tags",
+            "type": "tags",
+            "input": true
+          },
+          {
+            "label": "Velocidade impossível",
+            "tooltip": "É impossível o dispositivo chegar até essa velocidade ou maior.",
+            "suffix": "KM/H",
+            "mask": false,
+            "tableView": false,
+            "delimiter": false,
+            "requireDecimal": false,
+            "inputFormat": "plain",
+            "truncateMultipleSpaces": false,
+            "validate": {
+              "required": true
+            },
+            "key": "maxSpeed",
+            "type": "number",
+            "input": true
+          }
+        ]
+      },
+      {
         "type": "button",
         "label": "Submit",
         "key": "submit",
