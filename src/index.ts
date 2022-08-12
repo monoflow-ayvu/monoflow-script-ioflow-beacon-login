@@ -12,7 +12,7 @@ export type ImpossibleConfig = {
 
 export type GeofenceConfig = {
   name: string;
-  kind: 'default' | 'speedLimit' | 'openForm' | 'openTask';
+  kind: 'default' | 'speedLimit' | 'openForm' | 'openTask' | 'showForm';
   wkt: string;
   speedLimit?: number;
   tags?: string[];
@@ -29,6 +29,7 @@ export type Config = {
   speedLimit: number;
 
   highAccuracy: boolean;
+  omitNotGPS: boolean;
   schedule: {day: string[]; startTime: string; endTime: string}[];
   warnUserOverspeed: boolean;
   autoDisableOverSpeedAlert: boolean;
@@ -281,6 +282,12 @@ function clearAlert() {
 }
 
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
+  if (conf.get('omitNotGPS', false) === true) {
+    if (ev.getData().speed === -1) {
+      return;
+    }
+  }
+
   const speed = ev.getData().speed * 3.6;
   const lat = ev.getData().latitude;
   const lon = ev.getData().longitude;

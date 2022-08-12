@@ -66,6 +66,20 @@
         "input": true
       },
       {
+        "label": "Omitir posições que NÃO são do GPS",
+        "tooltip": "O sistema pega posição calculada pelas antennas GSM, mas elas não tem velocidade, mas a precisão é muito mais baixa.",
+        "tableView": false,
+        "defaultValue": false,
+        "key": "omitNotGPS",
+        "conditional": {
+          "show": true,
+          "when": "highAccuracy",
+          "eq": "true"
+        },
+        "type": "checkbox",
+        "input": true
+      },
+      {
         "label": "Cada quantos minutos salvar posições? (0 = salvar sempre que tiver uma)",
         "suffix": "Minutos",
         "mask": false,
@@ -151,6 +165,10 @@
                 {
                   "label": "Abrir tarefa",
                   "value": "openTask"
+                },
+                {
+                  "label": "Mostrar form",
+                  "value": "showForm"
                 }
               ]
             },
