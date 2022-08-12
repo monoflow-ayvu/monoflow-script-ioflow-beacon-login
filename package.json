@@ -225,15 +225,15 @@
           },
           {
             "label": "ID Tarefa/Form",
-            "autoExpand": false,
             "tableView": true,
             "truncateMultipleSpaces": true,
             "validate": {
               "required": true
             },
             "key": "id",
-            "customConditional": "show = row.kind === 'openForm' || row.kind === 'openTask';",
+            "customConditional": "show = row.kind === 'openForm' || row.kind === 'openTask' || row.kind === 'showForm';",
             "type": "textfield",
+            "autoExpand": false,
             "input": true
           },
           {

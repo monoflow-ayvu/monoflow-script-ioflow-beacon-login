@@ -157,6 +157,10 @@ class SpeedExcessEvent extends MonoUtils.wk.event.BaseEvent {
   }
 }
 
+const originalFormStates: {[id: string]: {
+  show: boolean;
+}} = {};
+
 function anyTagMatches(tags: string[]): boolean {
   // we always match if there are no tags
   if (!tags || tags.length === 0) return true;
@@ -201,8 +205,41 @@ function tryOpenTaskOrForm(geofence: GeofenceConfig, isOnEnter: boolean) {
   );
 }
 
+function ensureForm(formId: string, show: boolean) {
+  if (!formId) return;
+  const form = env.project?.formsManager?.forms?.find((page) => page.$modelId === formId)
+  if (!form) return;
+
+  const changes = {};
+
+  if (form.show !== show) {
+    changes['show'] = show;
+  }
+
+  if (form.autonomous !== show) {
+    changes['autonomous'] = show;
+  }
+
+  if (Object.keys(changes).length > 0) {
+    form._setRaw(changes);
+  }
+}
+
+function restoreforms() {
+  Object.keys(originalFormStates).forEach((pId) => {
+    const p = originalFormStates[pId];
+    ensureForm(pId, p.show);
+  });
+}
+
 messages.on('onInit', function () {
   platform.log('GPS script started');
+
+  env.project?.formsManager?.forms.forEach((form) => {
+    originalFormStates[form.$modelId] = {
+      show: form.show,
+    }
+  });
 
   // config for GPS requests
   env.setData('GPS_TIMEOUT', 1000 * 120);
@@ -229,6 +266,16 @@ messages.on('onInit', function () {
   // NOTE: some versions of the monoflow app need to have the GPS_REQUESTED downcased...
   env.setData('gps_requested', true);
 });
+
+// on exit restore original form states
+messages.on('onEnd', () => {
+  restoreforms();
+});
+
+// on logout restore original form states
+messages.on('onLogout', () => {
+  restoreforms();
+})
 
 type GeofenceCol = {
   insideSince: number | null;
@@ -387,6 +434,10 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
         hadSpeedExcess = true;
         onSpeedExcess(ev, geofence);
       }
+    }
+
+    if (geofence.kind === 'showForm') {
+      ensureForm(geofence.id, isInside); 
     }
   }
 
