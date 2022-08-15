@@ -49,6 +49,19 @@
         "defaultValue": true
       },
       {
+        "label": "Permitir ao usuario parar alerta clicando botão OK?",
+        "tableView": false,
+        "defaultValue": true,
+        "key": "showOkButtonForAlert",
+        "conditional": {
+          "show": true,
+          "when": "autoDisableOverSpeedAlert",
+          "eq": "true"
+        },
+        "type": "checkbox",
+        "input": true
+      },
+      {
         "label": "Salvar posições GPS?",
         "tableView": false,
         "defaultValue": true,

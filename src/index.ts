@@ -33,6 +33,7 @@ export type Config = {
   schedule: {day: string[]; startTime: string; endTime: string}[];
   warnUserOverspeed: boolean;
   autoDisableOverSpeedAlert: boolean;
+  showOkButtonForAlert: boolean;
 
   impossible: ImpossibleConfig[];
 };
@@ -300,16 +301,21 @@ function onSpeedExcess(ev: GPSSensorEvent, geofence?: GeofenceConfig) {
   );
 
   if (conf.get('warnUserOverspeed', false)) {
+    let buttons = [];
+    if (conf.get('showOkButtonForAlert', true)) {
+      buttons.push({
+        action: ACTION_OK_OVERSPEED,
+        name: 'OK',
+        payload: {},
+      })
+    }
+
     setUrgentNotification({
       title: 'Límite de velocidade',
       color: '#d4c224',
       message: 'Foi detectado um excesso de velocidade',
       urgent: true,
-      actions: [{
-        action: ACTION_OK_OVERSPEED,
-        name: 'OK',
-        payload: {},
-      }]
+      actions: buttons,
     })
   }
 }
