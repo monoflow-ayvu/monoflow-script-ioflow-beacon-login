@@ -439,6 +439,7 @@
     "@types/firebase": "3.2.1",
     "@types/jest": "27.5.2",
     "@types/lodash": "4.14.182",
+    "@types/node": "^18.7.4",
     "@types/uuid": "8.3.4",
     "@types/wellknown": "0.5.3",
     "babel-loader": "8.2.5",
