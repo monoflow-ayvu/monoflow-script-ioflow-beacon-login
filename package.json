@@ -28,6 +28,14 @@
         "input": true
       },
       {
+        "label": "Filtrar excesos de velocidade com detecção de atividade?",
+        "tableView": false,
+        "key": "overspeedActivityFilter",
+        "type": "checkbox",
+        "input": true,
+        "defaultValue": true
+      },
+      {
         "label": "Alertar ao usuario ao ter um excesso de velocidade?",
         "tableView": false,
         "key": "warnUserOverspeed",

@@ -27,6 +27,7 @@ export type Config = {
   enableGeofences: boolean;
   geofences: GeofenceConfig[];
   speedLimit: number;
+  overspeedActivityFilter: boolean;
 
   highAccuracy: boolean;
   omitNotGPS: boolean;
@@ -289,6 +290,22 @@ function getCol(): CollectionDoc<GeofenceCol> | undefined {
 }
 
 function onSpeedExcess(ev: GPSSensorEvent, geofence?: GeofenceConfig) {
+  if (conf.get('overspeedActivityFilter', true)) {
+    let currentAct: {name?: string} = env.data.CURRENT_ACTIVITY || {};
+    if (typeof currentAct === 'string') {
+      try {
+        currentAct = JSON.parse(currentAct);
+      } catch {
+        // pass
+      }
+    }
+
+    if (currentAct?.name === 'STILL') {
+      platform.log('speed limit omitted since currenct activity is STILL');
+      return;
+    }
+  }
+
   const speed = (ev?.gps?.speed || 0) * 3.6;
   const speedLimit = geofence?.speedLimit || conf.get('speedLimit', 0) || 0;
   platform.log(`Speed limit reached: ${speed} km/h (limit: ${speedLimit} km/h)`);
