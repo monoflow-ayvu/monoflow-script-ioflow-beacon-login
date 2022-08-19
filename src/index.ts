@@ -163,6 +163,8 @@ const originalFormStates: {[id: string]: {
   show: boolean;
 }} = {};
 
+const geofencesCache: Record<string, GeoJSONGeometry> = {};
+
 function anyTagMatches(tags: string[]): boolean {
   // we always match if there are no tags
   if (!tags || tags.length === 0) return true;
@@ -267,6 +269,24 @@ messages.on('onInit', function () {
   env.setData('GPS_REQUESTED', true);
   // NOTE: some versions of the monoflow app need to have the GPS_REQUESTED downcased...
   env.setData('gps_requested', true);
+
+  // pre cache all geofences
+  if (conf.get('enableGeofences', false)) {
+    const geofences = conf.get('geofences', []);
+    for (const geofence of geofences) {
+      let geojson: GeoJSONGeometry | undefined;
+      try {
+        geojson = wellknown.parse(geofence.wkt);
+      } catch (e) {
+        platform.log(`Error while building geofence ${geofence.name}: ${e.message}`);
+        continue;
+      }
+
+      if (geojson) {
+        geofencesCache[geofence.name] = geojson;
+      }
+    }
+  }
 });
 
 // on exit restore original form states
@@ -419,21 +439,19 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   const geofences = conf.get('geofences', []);
   
   for (const geofence of geofences) {
-    let geojson: GeoJSONGeometry | undefined;
-    try {
-      geojson = wellknown.parse(geofence.wkt);
-    } catch (e) {
-      platform.log(`Error while checking geofence ${geofence.name}: ${e.message}`);
+    const matchesOurDevice = anyTagMatches(geofence.tags || []);
+    if (!matchesOurDevice) {
+      continue;
+    }
+
+    const geojson = geofencesCache[geofence.name];
+    if (!geojson) {
+      platform.log(`Geofence ${geofence.name} is invalid`);
       continue;
     }
 
     if (geojson.type !== 'Polygon') {
       platform.log(`Geofence ${geofence.name} is not a polygon`);
-      continue;
-    }
-
-    const matchesOurDevice = anyTagMatches(geofence.tags || []);
-    if (!matchesOurDevice) {
       continue;
     }
 
