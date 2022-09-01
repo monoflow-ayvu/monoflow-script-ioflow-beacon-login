@@ -260,6 +260,8 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
     }
   }
 
+  env.setData('CURRENT_GPS_POSITION', {...data, when: Date.now()});
+
   // Store GPS
   if (conf.get('saveGPS', false)) {
     // this event is re-built like this to keep backwards compatibility
