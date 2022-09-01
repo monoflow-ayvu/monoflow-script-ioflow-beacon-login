@@ -202,7 +202,8 @@ function onSpeedExcess(ev: GPSSensorEvent, geofence?: GeofenceConfig) {
       message: 'Foi detectado um excesso de velocidade',
       urgent: true,
       actions: buttons,
-    })
+    });
+    env.setData('FORCE_VOLUME_LEVEL', 1);
   }
 }
 
