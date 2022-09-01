@@ -492,14 +492,17 @@ describe("signal quality filters", () => {
     messages.emit('onInit');
 
     // over the limit
+    jest.setSystemTime(new Date('2020-01-01 00:00:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 11));
     expect(env.project.saveEvent).toHaveBeenCalledTimes(0);
 
     // exactly the limit
+    jest.setSystemTime(new Date('2020-01-01 00:01:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 10));
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
 
     // under the limit
+    jest.setSystemTime(new Date('2020-01-01 00:02:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 9));
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
   })
