@@ -221,15 +221,27 @@ function clearAlert() {
 }
 
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
+  const data = ev.getData();
   if (conf.get('omitNotGPS', false) === true) {
-    if (ev.getData().speed === -1) {
+    if (
+      // these settings are only provided by the GPS sensor
+         data.speed === -1
+      || data.altitude === -1
+      || data.heading === -1
+      || data.accuracy === -1
+    ) {
       return;
     }
   }
 
-  const speed = ev.getData().speed * 3.6;
-  const lat = ev.getData().latitude;
-  const lon = ev.getData().longitude;
+  const maxAccuracy = conf.get('maxAccuracy', 0);
+  if (maxAccuracy > 0 && data.accuracy > maxAccuracy) {
+    return;
+  }
+
+  const speed = data.speed * 3.6;
+  const lat = data.latitude;
+  const lon = data.longitude;
 
   const impossibleRules = conf.get('impossible', []);
   for (const impRule of impossibleRules) {

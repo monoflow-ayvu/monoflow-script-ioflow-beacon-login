@@ -15,6 +15,7 @@ class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
   constructor(
     private readonly latitude = 1,
     private readonly longitude = 1,
+    private readonly accuracy = 1,
   ) {
     super();
   }
@@ -24,7 +25,7 @@ class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
       latitude: this.latitude,
       longitude: this.longitude,
       altitude: 1,
-      accuracy: 1,
+      accuracy: this.accuracy,
       altitudeAccuracy: 1,
       heading: 1,
       speed: 1,
@@ -456,4 +457,50 @@ describe('impossible values', () => {
       expect(env.project.saveEvent).not.toHaveBeenCalled();
     });
   });
+});
+
+describe("signal quality filters", () => {
+  afterEach(() => {
+    messages.removeAllListeners();
+  });
+
+  it("omitNotGPS=true omits signals from NOT the gps", () => {
+    getSettings = () => ({
+      saveGPS: true,
+      omitNotGPS: true,
+    });
+    (env.project as any) = {
+      saveEvent: jest.fn(),
+    };
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent(1, 1, -1));
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(0);
+  });
+
+  it("maxAccuracy=10 omits signals with higher level of accuracy", () => {
+    getSettings = () => ({
+      saveGPS: true,
+      maxAccuracy: 10
+    });
+    (env.project as any) = {
+      saveEvent: jest.fn(),
+    };
+
+    loadScript();
+    messages.emit('onInit');
+
+    // over the limit
+    messages.emit('onEvent', new MockGPSEvent(1, 1, 11));
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(0);
+
+    // exactly the limit
+    messages.emit('onEvent', new MockGPSEvent(1, 1, 10));
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
+
+    // under the limit
+    messages.emit('onEvent', new MockGPSEvent(1, 1, 9));
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
+  })
 })

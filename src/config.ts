@@ -25,6 +25,7 @@ export type Config = {
   overspeedActivityFilter: boolean;
 
   highAccuracy: boolean;
+  maxAccuracy: number;
   omitNotGPS: boolean;
   schedule: {day: string[]; startTime: string; endTime: string}[];
   warnUserOverspeed: boolean;
