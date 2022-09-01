@@ -1,5 +1,5 @@
 import * as MonoUtils from '@fermuch/monoutils';
-import { GenericEvent } from '.';
+import { GenericEvent } from './events';
 const read = require('fs').readFileSync;
 const join = require('path').join;
 
