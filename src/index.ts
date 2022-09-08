@@ -262,9 +262,9 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
     }
   }
 
-  // only once per 30 seconds
+  // only once per 5 seconds
   const now = Date.now();
-  if ((now - lastGpsSensorRead) / 1000 < 30) {
+  if ((now - lastGpsSensorRead) / 1000 < 5) {
     return;
   }
   lastGpsSensorRead = Date.now();
