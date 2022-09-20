@@ -192,7 +192,6 @@ function clearAlert() {
   }
 }
 
-let lastGpsSensorRead = 0;
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   const data = ev.getData();
   if (conf.get('omitNotGPS', false) === true) {
@@ -232,13 +231,6 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
       return; // cancel this event
     }
   }
-
-  // only once per 15 seconds
-  const now = Date.now();
-  if ((now - lastGpsSensorRead) / 1000 < 15) {
-    return;
-  }
-  lastGpsSensorRead = Date.now();
 
   // update data for other scripts
   env.setData('CURRENT_GPS_POSITION', {...data, when: Date.now()});
