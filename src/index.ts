@@ -2,8 +2,8 @@ import * as MonoUtils from "@fermuch/monoutils";
 import wellknown, { GeoJSONGeometry } from 'wellknown';
 import geoPointInPolygon from 'geo-point-in-polygon';
 import { CollectionDoc } from "@fermuch/telematree";
-import { currentLogin, myID } from "@fermuch/monoutils";
-import { getUrgentNotification, setUrgentNotification } from "./utils";
+import { currentLogin } from "@fermuch/monoutils";
+import { addGeofence, anyTagMatches, clearGeofences, ensureForm, getUrgentNotification, isInsideGeofence, setUrgentNotification } from "./utils";
 import { GPSSensorEvent, SpeedExcessEvent, GenericEvent, GeofenceEvent } from "./events";
 import { conf, GeofenceConfig } from "./config";
 import { ACTION_OK_OVERSPEED } from "./constants";
@@ -11,19 +11,6 @@ import { ACTION_OK_OVERSPEED } from "./constants";
 const originalFormStates: {[id: string]: {
   show: boolean;
 }} = {};
-
-const geofencesCache: Record<string, GeoJSONGeometry> = {};
-
-function anyTagMatches(tags: string[]): boolean {
-  // we always match if there are no tags
-  if (!tags || tags.length === 0) return true;
-
-  const userTags = env.project?.logins?.find((login) => login.key === currentLogin())?.tags || [];
-  const deviceTags = env.project?.usersManager?.users?.find?.((u) => u.$modelId === myID())?.tags || [];
-  const allTags = [...userTags, ...deviceTags];
-
-  return tags.some((t) => allTags.includes(t));
-}
 
 function tryOpenTaskOrForm(geofence: GeofenceConfig, isOnEnter: boolean) {
   if (geofence.kind !== 'openForm' && geofence.kind !== 'openTask') {
@@ -56,26 +43,6 @@ function tryOpenTaskOrForm(geofence: GeofenceConfig, isOnEnter: boolean) {
     geofence.kind === 'openForm' ? geofence.id : '',
     geofence.kind === 'openTask' ? geofence.id : ''
   );
-}
-
-function ensureForm(formId: string, show: boolean) {
-  if (!formId) return;
-  const form = env.project?.formsManager?.forms?.find((page) => page.$modelId === formId)
-  if (!form) return;
-
-  const changes = {};
-
-  if (form.show !== show) {
-    changes['show'] = show;
-  }
-
-  if (form.autonomous !== show) {
-    changes['autonomous'] = show;
-  }
-
-  if (Object.keys(changes).length > 0) {
-    form._setRaw(changes);
-  }
 }
 
 function restoreforms() {
@@ -121,6 +88,8 @@ messages.on('onInit', function () {
 
   // pre cache all geofences
   if (conf.get('enableGeofences', false)) {
+    clearGeofences();
+
     const geofences = conf.get('geofences', []);
     for (const geofence of geofences) {
       let geojson: GeoJSONGeometry | undefined;
@@ -131,9 +100,12 @@ messages.on('onInit', function () {
         continue;
       }
 
-      if (geojson) {
-        geofencesCache[geofence.name] = geojson;
+      if (!geojson || geojson.type !== 'Polygon') {
+        continue;
       }
+
+      const coords = geojson.coordinates[0].map((v) => ({lat: v[0], lng: v[1]}));
+      addGeofence(geofence.name, coords);
     }
   }
 });
@@ -310,54 +282,45 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
 
   // check geofences
   const geofences = conf.get('geofences', []);
+
+  isInsideGeofence({lat: lat, lng: lon})?.then?.((matches) => {
+    for (const geofence of geofences) {
+      const matchesOurDevice = anyTagMatches(geofence.tags || []);
+      if (!matchesOurDevice) {
+        continue;
+      }
   
-  for (const geofence of geofences) {
-    const matchesOurDevice = anyTagMatches(geofence.tags || []);
-    if (!matchesOurDevice) {
-      continue;
-    }
-
-    const geojson = geofencesCache[geofence.name];
-    if (!geojson) {
-      platform.log(`Geofence ${geofence.name} is invalid`);
-      continue;
-    }
-
-    if (geojson.type !== 'Polygon') {
-      platform.log(`Geofence ${geofence.name} is not a polygon`);
-      continue;
-    }
-
-    const wasInside: number | null = getCol()?.data[geofence.name] || null;
-    const isInside = geoPointInPolygon([lon, lat], geojson.coordinates[0]) as boolean;
-
-    if (isInside && !wasInside) {
-      platform.log(`${geofence.name} is now inside`);
-      getCol()?.set(geofence.name, Date.now());
-      env.project?.saveEvent(new GeofenceEvent(geofence.name, true, ev.getData(), null));
-      tryOpenTaskOrForm(geofence, true);
-    } else if (!isInside && wasInside) {
-      platform.log(`${geofence.name} is now outside`);
-      getCol()?.set(geofence.name, null);
-      env.project?.saveEvent(new GeofenceEvent(geofence.name, false, ev.getData(), wasInside));
-      tryOpenTaskOrForm(geofence, false);
-    }
-
-    if (isInside && geofence.kind === 'speedLimit') {
-      if (speed > geofence.speedLimit) {
-        hadSpeedExcess = true;
-        onSpeedExcess(ev, geofence);
+      const wasInside: number | null = getCol()?.data[geofence.name] || null;
+      const isInside = matches.includes(geofence.name);
+  
+      if (isInside && !wasInside) {
+        platform.log(`${geofence.name} is now inside`);
+        getCol()?.set(geofence.name, Date.now());
+        env.project?.saveEvent(new GeofenceEvent(geofence.name, true, ev.getData(), null));
+        tryOpenTaskOrForm(geofence, true);
+      } else if (!isInside && wasInside) {
+        platform.log(`${geofence.name} is now outside`);
+        getCol()?.set(geofence.name, null);
+        env.project?.saveEvent(new GeofenceEvent(geofence.name, false, ev.getData(), wasInside));
+        tryOpenTaskOrForm(geofence, false);
+      }
+  
+      if (isInside && geofence.kind === 'speedLimit') {
+        if (speed > geofence.speedLimit) {
+          hadSpeedExcess = true;
+          onSpeedExcess(ev, geofence);
+        }
+      }
+  
+      if (geofence.kind === 'showForm') {
+        ensureForm(geofence.id, isInside); 
       }
     }
-
-    if (geofence.kind === 'showForm') {
-      ensureForm(geofence.id, isInside); 
+  
+    if (!hadSpeedExcess) {
+      clearAlert();
     }
-  }
-
-  if (!hadSpeedExcess) {
-    clearAlert();
-  }
+  });
 });
 
 messages.on('onCall', (actId, _payload) => {

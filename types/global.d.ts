@@ -11,6 +11,25 @@ import { BaseEvent } from "@fermuch/telematree/dist/events/base_event";
 import { ScriptWithInstance } from "@fermuch/telematree/dist/tree/dynamic_data/script_with_instance";
 import telematree from "@fermuch/telematree/dist/library";
 
+// Geofence
+interface Point {
+  lat: number;
+  lng: number;
+}
+declare class GeofenceManager {
+  // Adds a geofence to the store.
+  // Its points need to be an array of objects of {lat: number; lng: number}
+  // Returns the ID.
+  add(id: string, polygon: Point[]): string;
+
+  // Clear all locations from the store.
+  clear();
+
+  // Checks if any geofence contains this point.
+  // Returns an array with all the IDs matching that position.
+  anyFenceContains(point: Point): Promise<string[]>;
+}
+
 // ** UUID **
 type V4Options = RandomOptions | RngOptions;
 type v4String = (options?: V4Options) => string;
@@ -22,7 +41,7 @@ type v4Buffer = <T extends OutputBuffer>(
 type v4 = v4Buffer & v4String;
 
 interface ScriptGlobal {
-  platform: KnownPlatformTools;
+  platform: KnownPlatformTools & { geofence?: GeofenceManager };
   telematree: telematree;
   data: DataProperty;
   env: DynamicData["env"];
@@ -35,7 +54,7 @@ interface ScriptGlobal {
 declare global {
   var global: ScriptGlobal;
 
-  var platform: KnownPlatformTools;
+  var platform: KnownPlatformTools & { geofence?: GeofenceManager };
   var telematree: telematree;
   var data: DataProperty;
   var env: DynamicData["env"];
