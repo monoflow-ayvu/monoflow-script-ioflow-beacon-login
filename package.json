@@ -1,6 +1,6 @@
 {
   "name": "gps",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Script para GPS. Tracking GPS, geolocalización, geocercas, etc.",
   "settingsSchema": {
     "display": "form",
