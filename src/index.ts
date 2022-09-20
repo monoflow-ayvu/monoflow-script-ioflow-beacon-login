@@ -283,7 +283,7 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   
       const wasInside: number | null = getCol()?.data[geofence.name] || null;
       const isInside = matches.includes(geofence.name);
-      console.warn('matches', matches);
+      platform.log('matches?', matches);
   
       if (isInside && !wasInside) {
         platform.log(`${geofence.name} is now inside`);
