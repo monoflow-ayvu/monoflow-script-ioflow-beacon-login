@@ -1,6 +1,5 @@
 import * as MonoUtils from "@fermuch/monoutils";
 import wellknown, { GeoJSONGeometry } from 'wellknown';
-import geoPointInPolygon from 'geo-point-in-polygon';
 import { CollectionDoc } from "@fermuch/telematree";
 import { currentLogin } from "@fermuch/monoutils";
 import { addGeofence, anyTagMatches, clearGeofences, ensureForm, getUrgentNotification, isInsideGeofence, setUrgentNotification } from "./utils";
@@ -292,6 +291,7 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   
       const wasInside: number | null = getCol()?.data[geofence.name] || null;
       const isInside = matches.includes(geofence.name);
+      console.warn('matches', matches);
   
       if (isInside && !wasInside) {
         platform.log(`${geofence.name} is now inside`);
