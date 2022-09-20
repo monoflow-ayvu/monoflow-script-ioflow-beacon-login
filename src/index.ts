@@ -103,7 +103,7 @@ messages.on('onInit', function () {
         continue;
       }
 
-      const coords = geojson.coordinates[0].map((v) => ({lat: v[0], lng: v[1]}));
+      const coords = geojson.coordinates[0].map((v) => ({lat: v[1], lng: v[0]}));
       addGeofence(geofence.name, coords);
     }
   }
