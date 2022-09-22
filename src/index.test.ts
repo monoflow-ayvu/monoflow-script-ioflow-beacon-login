@@ -358,6 +358,8 @@ describe("onInit", () => {
 });
 
 describe('impossible values', () => {
+  afterEach(() => { clock.restore(); });
+
   afterEach(() => {
     messages.removeAllListeners();
   });
