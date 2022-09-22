@@ -63,7 +63,7 @@ describe("onInit", () => {
     expect(env.data.GPS_USE_SIGNIFICANT_CHANGES).toBeTruthy();
   });
 
-  it('emits custom-gps if saveGPS is enabled', async () => {
+  it('emits custom-gps if saveGPS is enabled', () => {
     getSettings = () => ({
       saveGPS: true,
     });
@@ -74,7 +74,6 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
 
     const saved = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[0][0] as GenericEvent<{}>;
@@ -82,7 +81,7 @@ describe("onInit", () => {
     expect(saved.getData().type).toBe('custom-gps');
   });
 
-  it('sends only one update every X mins if saveEveryMins is set', async () => {
+  it('sends only one update every X mins if saveEveryMins is set', () => {
     getSettings = () => ({
       saveGPS: true,
       saveEveryMins: 1 / 60, // one second
@@ -95,33 +94,24 @@ describe("onInit", () => {
     messages.emit('onInit');
     jest.setSystemTime(new Date('2020-01-01 00:00:00'));
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
     jest.setSystemTime(new Date('2020-01-01 00:00:01'));
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     expect(env.data.LAST_GPS_UPDATE).toBeGreaterThan(0);
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
 
     jest.setSystemTime(new Date('2020-01-01 00:01:00'));
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
   });
 
-  it('emits GeofenceEvent when entering and exiting geofence if enableGeofences is enabled', async () => {
+  it('emits GeofenceEvent when entering and exiting geofence if enableGeofences is enabled', () => {
     getSettings = () => ({
       enableGeofences: true,
       geofences: [{
@@ -152,7 +142,6 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(colStore['testfence']).toBeTruthy();
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
@@ -164,7 +153,6 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent(200, 200));
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(colStore['testfence']).toBeFalsy();
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
@@ -174,7 +162,7 @@ describe("onInit", () => {
     expect(call2[0].getData().exiting).toBe(true);
   });
 
-  it('emits GeofenceEvent when entering and exiting geofence if any geofence tag matches', async () => {
+  it('emits GeofenceEvent when entering and exiting geofence if any geofence tag matches', () => {
     getSettings = () => ({
       enableGeofences: true,
       geofences: [{
@@ -212,7 +200,6 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(colStore['testfence']).toBeTruthy();
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
@@ -224,7 +211,6 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent(200, 200));
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(colStore['testfence']).toBeFalsy();
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
@@ -234,7 +220,7 @@ describe("onInit", () => {
     expect(call2[0].getData().exiting).toBe(true);
   });
 
-  it('does NOT emit GeofenceEvent when entering and exiting geofence if no geofence tag matches', async () => {
+  it('does NOT emit GeofenceEvent when entering and exiting geofence if no geofence tag matches', () => {
     getSettings = () => ({
       enableGeofences: true,
       geofences: [{
@@ -272,7 +258,6 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(colStore['testfence']).not.toBeDefined();
     expect(env.project.saveEvent).not.toHaveBeenCalledTimes(1);
@@ -280,13 +265,12 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent(200, 200));
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(colStore['testfence']).not.toBeDefined();
     expect(env.project.saveEvent).not.toHaveBeenCalledTimes(2);
   });
 
-  it('emits SpeedExcessEvent when speed is over the limit if enableSpeedExcess is enabled', async () => {
+  it('emits SpeedExcessEvent when speed is over the limit if enableSpeedExcess is enabled', () => {
     getSettings = () => ({
       enableGeofences: true,
       geofences: [{
@@ -318,7 +302,6 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(colStore['speedfence']).toBeTruthy();
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
@@ -333,7 +316,7 @@ describe("onInit", () => {
     expect(call2[0].getData().speedLimit).toBe(0.42);
   });
 
-  it('emits SpeedExcessEvent when speed is over the limit speedLimit is set', async () => {
+  it('emits SpeedExcessEvent when speed is over the limit speedLimit is set', () => {
     getSettings = () => ({
       speedLimit: 0.42,
     });
@@ -359,7 +342,6 @@ describe("onInit", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
     const call = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[0];
@@ -375,7 +357,7 @@ describe('impossible values', () => {
     messages.removeAllListeners();
   });
 
-  it('does not block normal events when speed is normal', async () => {
+  it('does not block normal events when speed is normal', () => {
     getSettings = () => ({
       speedLimit: 0.42,
       impossible: [{
@@ -394,12 +376,11 @@ describe('impossible values', () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(env.project.saveEvent).toHaveBeenCalled();
   });
 
-  it('applies to all gps events when no tag is set', async () => {
+  it('applies to all gps events when no tag is set', () => {
     getSettings = () => ({
       speedLimit: 0.00001,
       impossible: [{
@@ -418,7 +399,6 @@ describe('impossible values', () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
     expect(env.project.saveEvent).not.toHaveBeenCalled();
   });
@@ -434,7 +414,7 @@ describe('impossible values', () => {
       });
     })
 
-    it('does not apply to untagged devices', async () => {
+    it('does not apply to untagged devices', () => {
       (env.project as any) = {
         collectionsManager: {
           ensureExists: jest.fn(),
@@ -451,13 +431,12 @@ describe('impossible values', () => {
       loadScript();
       messages.emit('onInit');
       messages.emit('onEvent', new MockGPSEvent());
-      await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
   
       // only 
       expect(env.project.saveEvent).toHaveBeenCalled();
     });
 
-    it('applies to matching tagged devices', async () => {
+    it('applies to matching tagged devices', () => {
       (env.project as any) = {
         collectionsManager: {
           ensureExists: jest.fn(),
@@ -474,7 +453,6 @@ describe('impossible values', () => {
       loadScript();
       messages.emit('onInit');
       messages.emit('onEvent', new MockGPSEvent());
-      await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
 
       expect(env.project.saveEvent).not.toHaveBeenCalled();
     });
@@ -486,7 +464,7 @@ describe("signal quality filters", () => {
     messages.removeAllListeners();
   });
 
-  it("omitNotGPS=true omits signals from NOT the gps", async () => {
+  it("omitNotGPS=true omits signals from NOT the gps", () => {
     getSettings = () => ({
       saveGPS: true,
       omitNotGPS: true,
@@ -498,11 +476,10 @@ describe("signal quality filters", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent(1, 1, -1));
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     expect(env.project.saveEvent).toHaveBeenCalledTimes(0);
   });
 
-  it("maxAccuracy=10 omits signals with higher level of accuracy", async () => {
+  it("maxAccuracy=10 omits signals with higher level of accuracy", () => {
     getSettings = () => ({
       saveGPS: true,
       maxAccuracy: 10
@@ -517,19 +494,16 @@ describe("signal quality filters", () => {
     // over the limit
     jest.setSystemTime(new Date('2020-01-01 00:00:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 11));
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     expect(env.project.saveEvent).toHaveBeenCalledTimes(0);
 
     // exactly the limit
     jest.setSystemTime(new Date('2020-01-01 00:01:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 10));
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
 
     // under the limit
     jest.setSystemTime(new Date('2020-01-01 00:02:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 9));
-    await (platform.geofence as never as {currentPromise: Promise<string[]> | null})?.currentPromise;
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
   })
 })

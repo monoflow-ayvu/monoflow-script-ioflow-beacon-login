@@ -1,44 +1,6 @@
 import { EventArgs } from "@fermuch/telematree";
 import EventEmitter from "events";
 import TypedEmitter from "typed-emitter";
-import geoPointInPolygon from 'geo-point-in-polygon';
-import { GeofenceManager, Point } from '../../types/global';
-
-class MockGeofenceManager implements GeofenceManager {
-  geofences: {id: string; polygon: [number, number][]}[] = [];
-  currentPromise: Promise<string[]> | null = null;
-
-  add(id: string, polygon: Point[]): string {
-    this.geofences.push({
-      id,
-      polygon: polygon.map(({lat, lng}) => [lng, lat]),
-    });
-    return id;
-  }
-
-  clear() {
-    this.geofences = [];
-  }
-
-  anyFenceContains(point: Point): Promise<string[]> {
-    const prom = new Promise<string[]>((res) => {
-      const results: string[] = [];
-
-      for (const geofence of this.geofences) {
-        const isInside = geoPointInPolygon([point.lng, point.lat], geofence.polygon);
-        console.warn('checking', [point.lng, point.lat], 'against', geofence, 'gives', isInside);
-        if (isInside) {
-          results.push(geofence.id)
-        }
-      }
-
-      res(results);
-    })
-
-    this.currentPromise = prom;
-    return prom;
-  }
-}
 
 // setup global environment
 beforeAll(() => {
@@ -67,8 +29,7 @@ beforeAll(() => {
     },
     getNumber(key: string) {
       return _mockStorage.get(key) as number;
-    },
-    geofence: new MockGeofenceManager(),
+    }
   };
 
   // const telematree: telematree;
