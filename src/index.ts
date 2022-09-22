@@ -7,6 +7,7 @@ import { getUrgentNotification, setUrgentNotification } from "./utils";
 import { GPSSensorEvent, SpeedExcessEvent, GenericEvent, GeofenceEvent } from "./events";
 import { conf, GeofenceConfig } from "./config";
 import { ACTION_OK_OVERSPEED } from "./constants";
+// import { of, map } from "rxjs";
 
 const originalFormStates: {[id: string]: {
   show: boolean;
@@ -127,7 +128,7 @@ messages.on('onInit', function () {
       try {
         geojson = wellknown.parse(geofence.wkt);
       } catch (e) {
-        platform.log(`Error while building geofence ${geofence.name}: ${e.message}`);
+        platform.log(`Error while building geofence ${geofence.name}: ${(e as Error).message}`);
         continue;
       }
 
