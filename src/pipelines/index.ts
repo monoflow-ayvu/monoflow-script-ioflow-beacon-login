@@ -1,6 +1,6 @@
 import * as MonoUtils from '@fermuch/monoutils';
 import { GPSSensorEvent } from '../events';
-import {Observable} from "rxjs";
+import { Observable } from "rxjs";
 import { bufferTime, map } from "rxjs/operators";
 
 const position = new Observable<GPSSensorEvent>((sub) => {
