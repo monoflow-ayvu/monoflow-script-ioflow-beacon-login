@@ -511,7 +511,6 @@
     "geo-point-in-polygon": "1.0.0",
     "lodash": "4.17.21",
     "mobx": "6.6.2",
-    "rxjs": "^7.5.6",
     "wellknown": "0.5.0"
   },
   "jest": {

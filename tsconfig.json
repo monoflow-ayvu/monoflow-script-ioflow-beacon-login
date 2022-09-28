@@ -5,16 +5,15 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "noImplicitAny": false,
-    "module": "ESNext",
-    "target": "ES5",
+    "module": "commonjs",
+    "target": "ES3",
     "allowJs": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "isolatedModules": true,
     "lib": [
       "es2016"
     ],
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "typeRoots": [
       "./node_modules/@types",
       "./types"
