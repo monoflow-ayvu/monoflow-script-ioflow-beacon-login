@@ -1,8 +1,8 @@
-import wellknown, { GeoJSONGeometry, GeoJSONPolygon } from "wellknown";
+import wellknown, { GeoJSONGeometry } from "wellknown";
 import geoPointInPolygon from 'geo-point-in-polygon';
 
 class GeofenceCache {
-  cache: Map<string, GeoJSONPolygon> = new Map();
+  cache: Map<string, GeoJSONGeometry> = new Map();
 
   clear() {
     this.cache.clear();
@@ -28,7 +28,7 @@ class GeofenceCache {
       return false;
     }
 
-    return geoPointInPolygon([position.lng, position.lat], geofence.coordinates[0]) as boolean;
+    return geoPointInPolygon([position.lng, position.lat], geofence[0].coordinates[0]) as boolean;
   }
 }
 

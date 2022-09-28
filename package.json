@@ -461,7 +461,7 @@
     "minor": "npm run build && bump minor --commit --tag --push --all",
     "release": "npm run build && bump major --commit --tag --push --all",
     "test": "node --expose-gc ./node_modules/jest/bin/jest --runInBand --logHeapUsage",
-    "test:pipelines": "node --expose-gc ./node_modules/jest/bin/jest --runInBand --logHeapUsage -t 'pipelines overspeed only runs once for the highest speed geofence every 5 seconds'"
+    "test:pipelines": "pnpm run build && node --expose-gc ./node_modules/jest/bin/jest --runInBand --logHeapUsage -t 'pipelines overspeed only runs once for the highest speed geofence every 5 seconds'"
   },
   "browserslist": [
     "ie 6"
@@ -507,7 +507,7 @@
     "webpack-cli": "4.10.0"
   },
   "dependencies": {
-    "@fermuch/monoutils": "0.2.0",
+    "@fermuch/monoutils": "0.1.4",
     "@fermuch/telematree": "11.10.0",
     "cross-fetch": "3.1.5",
     "firebase": "9.9.4",

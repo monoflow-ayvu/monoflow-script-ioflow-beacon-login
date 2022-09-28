@@ -16,7 +16,7 @@ export function calculateOverspeed() {
     const data = ev.getData();
     const speed = data.speed * 3.6;
 
-    const overspeeds: {name: string, limit: number}[] = []
+    const overspeeds = []
 
     const speedLimit = conf.get('speedLimit', Infinity);
     if (speed > speedLimit) {
@@ -30,7 +30,7 @@ export function calculateOverspeed() {
       });
 
       if (isInside && speed > geofence.speedLimit) {
-        overspeeds.push({name: geofence.name, limit: geofence.speedLimit});
+        overspeeds.push(geofence.name, geofence.speedLimit);
       }
     }
 

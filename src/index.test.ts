@@ -516,3 +516,67 @@ describe("signal quality filters", () => {
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
   })
 });
+
+describe("pipelines", () => {
+  afterEach(() => { clock.restore(); });
+
+  beforeAll(() => {
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+  })
+
+  afterEach(() => {
+    // clean listeners
+    messages.removeAllListeners();
+    env.setData('LAST_GPS_UPDATE', null);
+  });
+
+  describe("overspeed", () => {
+    it('only runs once for the highest speed geofence every 5 seconds', () => {
+      getSettings = () => ({
+        enableGeofences: true,
+        geofences: [{
+          name: 'testfence',
+          kind: 'speedLimit',
+          wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+        }]
+      });
+
+      loadScript();
+      messages.emit('onInit');
+
+      const spy = jest.fn();
+      overSpeed$.subscribe(spy);
+
+      const slowEvent = new MockGPSEvent(1, 1, 1, 1);
+      const fastEvent = new MockGPSEvent(1, 1, 1, 5);
+
+      expect(spy).not.toHaveBeenCalled();
+      messages.emit('onEvent', slowEvent);
+      messages.emit('onEvent', slowEvent);
+      messages.emit('onEvent', slowEvent);
+      messages.emit('onEvent', fastEvent);
+      messages.emit('onEvent', slowEvent);
+      messages.emit('onEvent', slowEvent);
+      clock.tick(5000);
+      expect(spy).toHaveBeenCalledTimes(1);
+      console.info(spy.mock.calls)
+      expect(spy.mock.calls[0][0]?.getData?.()).toStrictEqual(fastEvent.getData());
+    });
+  });
+});

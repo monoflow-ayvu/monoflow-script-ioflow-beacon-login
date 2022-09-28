@@ -139,6 +139,8 @@ messages.on('onInit', () => {
       }
     }
   }
+
+  overSpeed$.subscribe(onOverspeed);
 });
 
 // on exit restore original form states
@@ -149,9 +151,7 @@ messages.on('onEnd', () => {
 // on logout restore original form states
 messages.on('onLogout', () => {
   restoreforms();
-});
-
-overSpeed$.subscribe(onOverspeed);
+})
 
 type GeofenceCol = {
   insideSince: number | null;
