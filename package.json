@@ -460,8 +460,7 @@
     "deploy-force": "node .scripts/deploy.js --force",
     "minor": "npm run build && bump minor --commit --tag --push --all",
     "release": "npm run build && bump major --commit --tag --push --all",
-    "test": "node --expose-gc ./node_modules/jest/bin/jest --runInBand --logHeapUsage",
-    "test:pipelines": "pnpm run build && node --expose-gc ./node_modules/jest/bin/jest --runInBand --logHeapUsage -t 'pipelines overspeed only runs once for the highest speed geofence every 5 seconds'"
+    "test": "node --expose-gc ./node_modules/jest/bin/jest --runInBand --logHeapUsage"
   },
   "browserslist": [
     "ie 6"
