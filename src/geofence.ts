@@ -6,9 +6,9 @@ import { anyTagMatches, ensureForm, getGeofenceCol, tryOpenTaskOrForm } from "./
 let lastGpsSensorRead = 0;
 
 export function onGefence(ev: GPSSensorEvent) {
-  // only once per 15 seconds
+  // only once per 45 seconds
   const now = Date.now();
-  if ((now - lastGpsSensorRead) / 1000 < 15) {
+  if ((now - lastGpsSensorRead) / 1000 < 45) {
     return;
   }
   lastGpsSensorRead = Date.now();

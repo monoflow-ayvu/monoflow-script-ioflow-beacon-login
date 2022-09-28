@@ -53,7 +53,21 @@ function handleOverspeed(ev: GPSSensorEvent, name: string, limit: number) {
   }
 }
 
-export function onOverspeed(ev: GPSSensorEvent) {
+let lastGpsSensorRead = 0;
+let positionsCache: GPSSensorEvent[] = [];
+
+export function onOverspeed(newEvent: GPSSensorEvent) {
+  positionsCache.push(newEvent);
+  // only once per 5 seconds
+  const now = Date.now();
+  if ((now - lastGpsSensorRead) / 1000 < 5) {
+    return;
+  }
+  lastGpsSensorRead = Date.now();
+
+  // impossible to have less than one event
+  const ev = positionsCache.sort((a, b) => b.getData().speed - a.getData().speed)[0]
+
   const data = ev.getData();
   const speed = data.speed * 3.6;
   let hadSpeedExcess = false;
