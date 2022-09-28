@@ -1,7 +1,7 @@
 import { filter } from "rxjs";
 import { conf } from "../../config";
 import { GPSSensorEvent } from "../../events";
-import { anyTagMatches } from "./tags";
+import { anyTagMatches } from "../utils/tags";
 
 export function filterImpossibleSpeeds() {
   const impossibleRules = conf.get('impossible', []);
