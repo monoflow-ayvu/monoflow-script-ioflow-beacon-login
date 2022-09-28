@@ -1,7 +1,7 @@
 import { filter, Observable } from "rxjs";
 import { conf } from "../../config";
 import { GPSSensorEvent } from "../../events";
-import { anyTagMatches } from "../utils/tags";
+import { anyTagMatches } from "./tags";
 
 export function positionQualityFilter() {
   const maxAccuracy = conf.get('maxAccuracy', Infinity);
