@@ -1,7 +1,7 @@
 import * as MonoUtils from '@fermuch/monoutils';
 import { GPSSensorEvent } from '../events';
 import { Observable } from "rxjs";
-import { bufferTime, map } from "rxjs/operators";
+import { bufferTime, filter, map } from "rxjs/operators";
 import { positionQualityFilter } from './filters/position_quality';
 import { filterImpossibleSpeeds } from './filters/impossible_speed';
 import { calculateOverspeed, GPSSensorEventWithSpeeds } from './filters/overspeed';
@@ -23,5 +23,16 @@ export const overSpeed$: Observable<GPSSensorEventWithSpeeds> = position.pipe(
   filterImpossibleSpeeds(),
   bufferTime(OVERSPEED_PIPELINE_TIMEBUFFER),
   map((events) => events.sort((a, b) => b.getData().speed - a.getData().speed)[0]),
+  filter((e) => !!e),
   calculateOverspeed(),
+);
+
+// geofence pipeline tracks current event in the interval
+const GEOFENCE_PIPELINE_TIMEBUFFER = 30000; // 30 seconds;
+export const geofence$: Observable<GPSSensorEvent> = position.pipe(
+  positionQualityFilter(),
+  filterImpossibleSpeeds(),
+  bufferTime(GEOFENCE_PIPELINE_TIMEBUFFER),
+  map((events) => events.sort((a, b) => b.createdAt - a.createdAt)[0]),
+  filter((e) => !!e),
 );

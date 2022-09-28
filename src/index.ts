@@ -1,85 +1,20 @@
 import * as MonoUtils from "@fermuch/monoutils";
-import wellknown, { GeoJSONGeometry } from 'wellknown';
-import geoPointInPolygon from 'geo-point-in-polygon';
 import { CollectionDoc } from "@fermuch/telematree";
 import { currentLogin, myID } from "@fermuch/monoutils";
 import { getUrgentNotification, setUrgentNotification } from "./utils";
 import { GPSSensorEvent, SpeedExcessEvent, GenericEvent, GeofenceEvent } from "./events";
 import { conf, GeofenceConfig } from "./config";
 import { ACTION_OK_OVERSPEED } from "./constants";
-import { overSpeed$ } from "./pipelines";
+import { geofence$, overSpeed$ } from "./pipelines";
 import { onOverspeed } from "./overspeed";
+import { ensureForm } from "./forms_and_tasks";
+import { geofenceCache } from "./pipelines/utils/geofence_cache";
+import { onPosition } from "./position";
 // import { of, map } from "rxjs";
 
 const originalFormStates: {[id: string]: {
   show: boolean;
 }} = {};
-
-const geofencesCache: Record<string, GeoJSONGeometry> = {};
-
-function anyTagMatches(tags: string[]): boolean {
-  // we always match if there are no tags
-  if (!tags || tags.length === 0) return true;
-
-  const userTags = env.project?.logins?.find((login) => login.key === currentLogin())?.tags || [];
-  const deviceTags = env.project?.usersManager?.users?.find?.((u) => u.$modelId === myID())?.tags || [];
-  const allTags = [...userTags, ...deviceTags];
-
-  return tags.some((t) => allTags.includes(t));
-}
-
-function tryOpenTaskOrForm(geofence: GeofenceConfig, isOnEnter: boolean) {
-  if (geofence.kind !== 'openForm' && geofence.kind !== 'openTask') {
-    return;
-  }
-
-  if (!currentLogin()) {
-    return;
-  }
-
-  if (env.data.CURRENT_PAGE === 'Submit') {
-    return;
-  }
-
-  if (isOnEnter && !geofence.when.onEnter) {
-    return;
-  }
-
-  if (!isOnEnter && !geofence.when.onExit) {
-    return;
-  }
-
-  if (!('goToSubmit' in platform)) {
-    platform.log('no goToSubmit platform tool available');
-    return;
-  }
-
-  platform.log(`showing ${geofence.kind === 'openForm' ? 'form' : 'task'}: ${geofence.id}`);
-  (platform as unknown as { gotToSubmit: (formId?: string, taskId?: string) => void })?.gotToSubmit?.(
-    geofence.kind === 'openForm' ? geofence.id : '',
-    geofence.kind === 'openTask' ? geofence.id : ''
-  );
-}
-
-function ensureForm(formId: string, show: boolean) {
-  if (!formId) return;
-  const form = env.project?.formsManager?.forms?.find((page) => page.$modelId === formId)
-  if (!form) return;
-
-  const changes = {};
-
-  if (form.show !== show) {
-    changes['show'] = show;
-  }
-
-  if (form.autonomous !== show) {
-    changes['autonomous'] = show;
-  }
-
-  if (Object.keys(changes).length > 0) {
-    form._setRaw(changes);
-  }
-}
 
 function restoreforms() {
   Object.keys(originalFormStates).forEach((pId) => {
@@ -124,19 +59,8 @@ messages.on('onInit', () => {
 
   // pre cache all geofences
   if (conf.get('enableGeofences', false)) {
-    const geofences = conf.get('geofences', []);
-    for (const geofence of geofences) {
-      let geojson: GeoJSONGeometry | undefined;
-      try {
-        geojson = wellknown.parse(geofence.wkt);
-      } catch (e) {
-        platform.log(`Error while building geofence ${geofence.name}: ${(e as Error).message}`);
-        continue;
-      }
-
-      if (geojson) {
-        geofencesCache[geofence.name] = geojson;
-      }
+    for (const geofence of conf.get('geofences', [])) {
+      geofenceCache.save(geofence.name, geofence.wkt);
     }
   }
 });
@@ -151,80 +75,21 @@ messages.on('onLogout', () => {
   restoreforms();
 });
 
-overSpeed$.subscribe(onOverspeed);
-
-type GeofenceCol = {
-  insideSince: number | null;
-  [geofenceName: string]: number | null;
-}
-
-function getCol(): CollectionDoc<GeofenceCol> | undefined {
-  const col = env.project?.collectionsManager.ensureExists<GeofenceCol>('geofence', 'Geofence');
-  return col.get(MonoUtils.myID());
-}
-
-function onSpeedExcess(ev: GPSSensorEvent, geofence?: GeofenceConfig) {
-  if (conf.get('overspeedActivityFilter', true)) {
-    let currentAct: {name?: string} = env.data.CURRENT_ACTIVITY || {};
-    if (typeof currentAct === 'string') {
-      try {
-        currentAct = JSON.parse(currentAct);
-      } catch {
-        // pass
-      }
-    }
-
-    if (currentAct?.name === 'STILL') {
-      platform.log('speed limit omitted since currenct activity is STILL');
-      return;
-    }
-  }
-
-  const speed = (ev?.gps?.speed || 0) * 3.6;
-  const speedLimit = geofence?.speedLimit || conf.get('speedLimit', 0) || 0;
-  platform.log(`Speed limit reached: ${speed} km/h (limit: ${speedLimit} km/h)`);
-  env.project?.saveEvent(
-    new SpeedExcessEvent(
-      geofence?.name || 'default',
-      ev.getData(),
-      speedLimit
-    )
-  );
-
-  if (conf.get('warnUserOverspeed', false)) {
-    let buttons = [];
-    if (conf.get('showOkButtonForAlert', true)) {
-      buttons.push({
-        action: ACTION_OK_OVERSPEED,
-        name: 'OK',
-        payload: {},
-      })
-    }
-
-    setUrgentNotification({
-      title: 'Límite de velocidade',
-      color: '#d4c224',
-      message: 'Foi detectado um excesso de velocidade',
-      urgent: true,
-      actions: buttons,
-    });
-    env.setData('FORCE_VOLUME_LEVEL', 1);
-  }
-}
-
-function clearAlert() {
-  if (conf.get('autoDisableOverSpeedAlert', true) === false) {
+messages.on('onCall', (actId, _payload) => {
+  if (actId !== ACTION_OK_OVERSPEED) {
     return;
   }
 
-  const notif = getUrgentNotification();
-  if (!notif) return;
+  setUrgentNotification(null);
+});
 
-  const isOverspeed = notif.actions?.some((n) => n.action === ACTION_OK_OVERSPEED);
-  if (isOverspeed) {
-    setUrgentNotification(null);
-  }
-}
+overSpeed$.subscribe(onOverspeed);
+geofence$.subscribe(onPosition);
+// TODO: clearAlert() periodically
+
+
+
+
 
 // let lastGpsSensorRead = 0;
 // MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
@@ -364,11 +229,3 @@ function clearAlert() {
 //     clearAlert();
 //   }
 // });
-
-messages.on('onCall', (actId, _payload) => {
-  if (actId !== ACTION_OK_OVERSPEED) {
-    return;
-  }
-
-  setUrgentNotification(null);
-})

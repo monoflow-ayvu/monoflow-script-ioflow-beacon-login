@@ -1,12 +1,15 @@
-import { filter, Observable } from "rxjs";
+import { filter } from "rxjs";
 import { conf } from "../../config";
 import { GPSSensorEvent } from "../../events";
-import { anyTagMatches } from "../utils/tags";
 
 export function positionQualityFilter() {
   const maxAccuracy = conf.get('maxAccuracy', Infinity);
   return filter<GPSSensorEvent>(ev => {
     const data = ev?.getData?.();
+
+    if (conf.get('omitNotGPS', false) === false) {
+      return false;
+    }
 
     if(
          data?.speed > -1

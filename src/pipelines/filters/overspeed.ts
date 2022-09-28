@@ -13,6 +13,9 @@ export type GPSSensorEventWithSpeeds = GPSSensorEvent & {
 
 export function calculateOverspeed() {
   return map<GPSSensorEvent, GPSSensorEventWithSpeeds>(ev => {
+    if (!ev) {
+      return;
+    }
     const data = ev.getData();
     const speed = data.speed * 3.6;
 
