@@ -67,6 +67,7 @@ export function onOverspeed(newEvent: GPSSensorEvent) {
 
   // impossible to have less than one event
   const ev = positionsCache.sort((a, b) => b.getData().speed - a.getData().speed)[0]
+  positionsCache = [];
 
   const data = ev.getData();
   const speed = data.speed * 3.6;
