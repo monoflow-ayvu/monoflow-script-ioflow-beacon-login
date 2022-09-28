@@ -482,7 +482,7 @@
     "@types/commander": "2.12.2",
     "@types/firebase": "3.2.1",
     "@types/jest": "27.5.2",
-    "@types/lodash": "4.14.185",
+    "@types/lodash": "4.14.186",
     "@types/node": "18.7.4",
     "@types/uuid": "8.3.4",
     "@types/wellknown": "0.5.3",
