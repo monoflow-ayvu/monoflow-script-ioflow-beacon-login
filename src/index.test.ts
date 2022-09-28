@@ -575,8 +575,7 @@ describe("pipelines", () => {
       messages.emit('onEvent', slowEvent);
       clock.tick(5000);
       expect(spy).toHaveBeenCalledTimes(1);
-      console.info(spy.mock.calls)
-      expect(spy.mock.calls[0][0]?.getData?.()).toStrictEqual(fastEvent.getData());
+      expect(spy.mock.calls[0][0].getData()).toStrictEqual(fastEvent.getData());
     });
   });
 });
