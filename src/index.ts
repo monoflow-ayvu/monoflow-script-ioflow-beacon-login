@@ -1,10 +1,7 @@
 import * as MonoUtils from "@fermuch/monoutils";
-import wellknown, { GeoJSONGeometry } from 'wellknown';
-import geoPointInPolygon from 'geo-point-in-polygon';
-import { CollectionDoc } from "@fermuch/telematree";
-import { anyTagMatches, ensureForm, getUrgentNotification, setUrgentNotification, tryOpenTaskOrForm } from "./utils";
-import { GPSSensorEvent, SpeedExcessEvent, GenericEvent, GeofenceEvent } from "./events";
-import { conf, GeofenceConfig } from "./config";
+import { anyTagMatches, ensureForm, setUrgentNotification } from "./utils";
+import type { GPSSensorEvent } from "./events";
+import { conf } from "./config";
 import { ACTION_OK_OVERSPEED } from "./constants";
 import { onOverspeed } from "./overspeed";
 import { onGefence } from "./geofence";
@@ -74,56 +71,7 @@ messages.on('onEnd', () => {
 // on logout restore original form states
 messages.on('onLogout', () => {
   restoreforms();
-})
-
-function onSpeedExcess(ev: GPSSensorEvent, geofence?: GeofenceConfig) {
-  if (conf.get('overspeedActivityFilter', true)) {
-    let currentAct: { name?: string } = env.data.CURRENT_ACTIVITY || {};
-    if (typeof currentAct === 'string') {
-      try {
-        currentAct = JSON.parse(currentAct);
-      } catch {
-        // pass
-      }
-    }
-
-    if (currentAct?.name === 'STILL') {
-      platform.log('speed limit omitted since currenct activity is STILL');
-      return;
-    }
-  }
-
-  const speed = (ev?.getData().speed || 0) * 3.6;
-  const speedLimit = geofence?.speedLimit || conf.get('speedLimit', 0) || 0;
-  platform.log(`Speed limit reached: ${speed} km/h (limit: ${speedLimit} km/h)`);
-  env.project?.saveEvent(
-    new SpeedExcessEvent(
-      geofence?.name || 'default',
-      ev.getData(),
-      speedLimit
-    )
-  );
-
-  if (conf.get('warnUserOverspeed', false)) {
-    let buttons = [];
-    if (conf.get('showOkButtonForAlert', true)) {
-      buttons.push({
-        action: ACTION_OK_OVERSPEED,
-        name: 'OK',
-        payload: {},
-      })
-    }
-
-    setUrgentNotification({
-      title: 'Límite de velocidade',
-      color: '#d4c224',
-      message: 'Foi detectado um excesso de velocidade',
-      urgent: true,
-      actions: buttons,
-    });
-    env.setData('FORCE_VOLUME_LEVEL', 1);
-  }
-}
+});
 
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   const data = ev.getData();
