@@ -1,5 +1,5 @@
 import * as MonoUtils from '@fermuch/monoutils';
-import { GenericEvent } from './events';
+import type { GenericEvent } from './events';
 const read = require('fs').readFileSync;
 const join = require('path').join;
 
@@ -67,8 +67,21 @@ describe("onInit", () => {
     getSettings = () => ({
       saveGPS: true,
     });
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
     (env.project as any) = {
-      saveEvent: jest.fn(),
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
     };
 
     loadScript();
@@ -86,8 +99,21 @@ describe("onInit", () => {
       saveGPS: true,
       saveEveryMins: 1 / 60, // one second
     });
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
     (env.project as any) = {
-      saveEvent: jest.fn(),
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
     };
 
     loadScript();
@@ -303,24 +329,17 @@ describe("onInit", () => {
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
 
-    expect(colStore['speedfence']).toBeTruthy();
-    expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
     const call = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[0];
-    expect(call[0].kind).toBe('geofence');
-    expect(call[0].getData().entering).toBe(true);
-    expect(call[0].getData().exiting).toBe(false);
-
-    const call2 = (env.project.saveEvent as jest.Mock<any, any>).mock.calls[1];
-    expect(call2[0].kind).toBe('speed-excess');
-    expect(call2[0].getData().gps.speed).toBe(1);
-    expect(call2[0].getData().speedLimit).toBe(0.42);
+    expect(call[0].kind).toBe('speed-excess');
+    expect(call[0].getData().gps.speed).toBe(1);
+    expect(call[0].getData().speedLimit).toBe(0.42);
   });
 
   it('emits SpeedExcessEvent when speed is over the limit speedLimit is set', () => {
     getSettings = () => ({
       speedLimit: 0.42,
     });
-
     const colStore = {} as Record<any, any>;
     const mockCol = {
       get() {
@@ -331,7 +350,6 @@ describe("onInit", () => {
         }
       }
     };
-
     (env.project as any) = {
       collectionsManager: {
         ensureExists: () => mockCol,
@@ -366,9 +384,19 @@ describe('impossible values', () => {
       }],
     });
 
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
     (env.project as any) = {
       collectionsManager: {
-        ensureExists: jest.fn(),
+        ensureExists: () => mockCol,
       },
       saveEvent: jest.fn()
     };
@@ -415,9 +443,19 @@ describe('impossible values', () => {
     })
 
     it('does not apply to untagged devices', () => {
+      const colStore = {} as Record<any, any>;
+      const mockCol = {
+        get() {
+          return {
+            data: colStore,
+            get: (k: string) => colStore[k],
+            set: (k: string, v: any) => (colStore[k] = v),
+          }
+        }
+      };
       (env.project as any) = {
         collectionsManager: {
-          ensureExists: jest.fn(),
+          ensureExists: () => mockCol,
         },
         saveEvent: jest.fn(),
         usersManager: {
@@ -469,8 +507,21 @@ describe("signal quality filters", () => {
       saveGPS: true,
       omitNotGPS: true,
     });
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
     (env.project as any) = {
-      saveEvent: jest.fn(),
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
     };
 
     loadScript();
@@ -484,8 +535,21 @@ describe("signal quality filters", () => {
       saveGPS: true,
       maxAccuracy: 10
     });
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
     (env.project as any) = {
-      saveEvent: jest.fn(),
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
     };
 
     loadScript();
