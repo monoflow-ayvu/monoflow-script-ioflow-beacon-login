@@ -7,8 +7,6 @@ import { getUrgentNotification, setUrgentNotification } from "./utils";
 import { GPSSensorEvent, SpeedExcessEvent, GenericEvent, GeofenceEvent } from "./events";
 import { conf, GeofenceConfig } from "./config";
 import { ACTION_OK_OVERSPEED } from "./constants";
-import { overSpeed$ } from "./pipelines";
-import { onOverspeed } from "./overspeed";
 // import { of, map } from "rxjs";
 
 const originalFormStates: {[id: string]: {
@@ -88,7 +86,7 @@ function restoreforms() {
   });
 }
 
-messages.on('onInit', () => {
+messages.on('onInit', function () {
   platform.log('GPS script started');
 
   env.project?.formsManager?.forms.forEach((form) => {
@@ -139,8 +137,6 @@ messages.on('onInit', () => {
       }
     }
   }
-
-  overSpeed$.subscribe(onOverspeed);
 });
 
 // on exit restore original form states
@@ -226,144 +222,144 @@ function clearAlert() {
   }
 }
 
-// let lastGpsSensorRead = 0;
-// MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
-//   const data = ev.getData();
-//   if (conf.get('omitNotGPS', false) === true) {
-//     if (
-//       // these settings are only provided by the GPS sensor
-//          data.speed === -1
-//       || data.altitude === -1
-//       || data.heading === -1
-//       || data.accuracy === -1
-//     ) {
-//       return;
-//     }
-//   }
+let lastGpsSensorRead = 0;
+MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
+  const data = ev.getData();
+  if (conf.get('omitNotGPS', false) === true) {
+    if (
+      // these settings are only provided by the GPS sensor
+         data.speed === -1
+      || data.altitude === -1
+      || data.heading === -1
+      || data.accuracy === -1
+    ) {
+      return;
+    }
+  }
 
-//   const maxAccuracy = conf.get('maxAccuracy', 0);
-//   if (maxAccuracy > 0 && data.accuracy > maxAccuracy) {
-//     return;
-//   }
+  const maxAccuracy = conf.get('maxAccuracy', 0);
+  if (maxAccuracy > 0 && data.accuracy > maxAccuracy) {
+    return;
+  }
 
-//   const speed = data.speed * 3.6;
-//   const lat = data.latitude;
-//   const lon = data.longitude;
+  const speed = data.speed * 3.6;
+  const lat = data.latitude;
+  const lon = data.longitude;
 
-//   const impossibleRules = conf.get('impossible', []);
-//   for (const impRule of impossibleRules) {
-//     platform.log('evaluating rule', impRule);
-//     // for now we only check for speed, so if no speed is giving we ignore the rule
-//     if (impRule.maxSpeed === 0) continue;
+  const impossibleRules = conf.get('impossible', []);
+  for (const impRule of impossibleRules) {
+    platform.log('evaluating rule', impRule);
+    // for now we only check for speed, so if no speed is giving we ignore the rule
+    if (impRule.maxSpeed === 0) continue;
 
-//     // check for global rules
-//     if ((impRule.tags || []).length === 0 && speed > impRule.maxSpeed) {
-//       return; // cancel this event
-//     }
+    // check for global rules
+    if ((impRule.tags || []).length === 0 && speed > impRule.maxSpeed) {
+      return; // cancel this event
+    }
 
-//     // tagged rules
-//     if (anyTagMatches(impRule.tags) && speed > impRule.maxSpeed) {
-//       return; // cancel this event
-//     }
-//   }
+    // tagged rules
+    if (anyTagMatches(impRule.tags) && speed > impRule.maxSpeed) {
+      return; // cancel this event
+    }
+  }
 
-//   // only once per 15 seconds
-//   const now = Date.now();
-//   if ((now - lastGpsSensorRead) / 1000 < 15) {
-//     return;
-//   }
-//   lastGpsSensorRead = Date.now();
+  // only once per 15 seconds
+  const now = Date.now();
+  if ((now - lastGpsSensorRead) / 1000 < 15) {
+    return;
+  }
+  lastGpsSensorRead = Date.now();
 
-//   // update data for other scripts
-//   env.setData('CURRENT_GPS_POSITION', {...data, when: Date.now()});
+  // update data for other scripts
+  env.setData('CURRENT_GPS_POSITION', {...data, when: Date.now()});
 
-//   // Store GPS
-//   if (conf.get('saveGPS', false)) {
-//     // this event is re-built like this to keep backwards compatibility
-//     const event = MonoUtils.wk.event.regenerateEvent(new GenericEvent('custom-gps', {
-//       ...ev.getData(),
-//       // speeds is deprecated, but we still want to support it
-//       speeds: [] as number[],
-//     }, {
-//       deviceId: MonoUtils.myID(),
-//       login: MonoUtils.currentLogin() || false,
-//     }));
+  // Store GPS
+  if (conf.get('saveGPS', false)) {
+    // this event is re-built like this to keep backwards compatibility
+    const event = MonoUtils.wk.event.regenerateEvent(new GenericEvent('custom-gps', {
+      ...ev.getData(),
+      // speeds is deprecated, but we still want to support it
+      speeds: [] as number[],
+    }, {
+      deviceId: MonoUtils.myID(),
+      login: MonoUtils.currentLogin() || false,
+    }));
 
-//     const saveEvery = conf.get('saveEveryMins', 0);
-//     const lastGpsUpdate = Number(env.data.LAST_GPS_UPDATE || '0') || 0;
-//     if (saveEvery === 0 || (Date.now() - lastGpsUpdate) > saveEvery * 60 * 1000) {
-//       env.setData('LAST_GPS_UPDATE', Date.now());
-//       env.project?.saveEvent(event);
-//     }
-//   }
+    const saveEvery = conf.get('saveEveryMins', 0);
+    const lastGpsUpdate = Number(env.data.LAST_GPS_UPDATE || '0') || 0;
+    if (saveEvery === 0 || (Date.now() - lastGpsUpdate) > saveEvery * 60 * 1000) {
+      env.setData('LAST_GPS_UPDATE', Date.now());
+      env.project?.saveEvent(event);
+    }
+  }
 
-//   let hadSpeedExcess = false;
-//   const speedLimit = conf.get('speedLimit', 0);
-//   if (speedLimit > 0) {
-//     if (speed > speedLimit) {
-//       onSpeedExcess(ev);
-//       hadSpeedExcess = true;
-//     }
-//   }
+  let hadSpeedExcess = false;
+  const speedLimit = conf.get('speedLimit', 0);
+  if (speedLimit > 0) {
+    if (speed > speedLimit) {
+      onSpeedExcess(ev);
+      hadSpeedExcess = true;
+    }
+  }
 
-//   if (!conf.get('enableGeofences', false)) {
-//     if (!hadSpeedExcess) {
-//       clearAlert();
-//     }
-//     return;
-//   }
+  if (!conf.get('enableGeofences', false)) {
+    if (!hadSpeedExcess) {
+      clearAlert();
+    }
+    return;
+  }
 
-//   // check geofences
-//   const geofences = conf.get('geofences', []);
+  // check geofences
+  const geofences = conf.get('geofences', []);
   
-//   for (const geofence of geofences) {
-//     const matchesOurDevice = anyTagMatches(geofence.tags || []);
-//     if (!matchesOurDevice) {
-//       continue;
-//     }
+  for (const geofence of geofences) {
+    const matchesOurDevice = anyTagMatches(geofence.tags || []);
+    if (!matchesOurDevice) {
+      continue;
+    }
 
-//     const geojson = geofencesCache[geofence.name];
-//     if (!geojson) {
-//       platform.log(`Geofence ${geofence.name} is invalid`);
-//       continue;
-//     }
+    const geojson = geofencesCache[geofence.name];
+    if (!geojson) {
+      platform.log(`Geofence ${geofence.name} is invalid`);
+      continue;
+    }
 
-//     if (geojson.type !== 'Polygon') {
-//       platform.log(`Geofence ${geofence.name} is not a polygon`);
-//       continue;
-//     }
+    if (geojson.type !== 'Polygon') {
+      platform.log(`Geofence ${geofence.name} is not a polygon`);
+      continue;
+    }
 
-//     const wasInside: number | null = getCol()?.data[geofence.name] || null;
-//     const isInside = geoPointInPolygon([lon, lat], geojson.coordinates[0]) as boolean;
+    const wasInside: number | null = getCol()?.data[geofence.name] || null;
+    const isInside = geoPointInPolygon([lon, lat], geojson.coordinates[0]) as boolean;
 
-//     if (isInside && !wasInside) {
-//       platform.log(`${geofence.name} is now inside`);
-//       getCol()?.set(geofence.name, Date.now());
-//       env.project?.saveEvent(new GeofenceEvent(geofence.name, true, ev.getData(), null));
-//       tryOpenTaskOrForm(geofence, true);
-//     } else if (!isInside && wasInside) {
-//       platform.log(`${geofence.name} is now outside`);
-//       getCol()?.set(geofence.name, null);
-//       env.project?.saveEvent(new GeofenceEvent(geofence.name, false, ev.getData(), wasInside));
-//       tryOpenTaskOrForm(geofence, false);
-//     }
+    if (isInside && !wasInside) {
+      platform.log(`${geofence.name} is now inside`);
+      getCol()?.set(geofence.name, Date.now());
+      env.project?.saveEvent(new GeofenceEvent(geofence.name, true, ev.getData(), null));
+      tryOpenTaskOrForm(geofence, true);
+    } else if (!isInside && wasInside) {
+      platform.log(`${geofence.name} is now outside`);
+      getCol()?.set(geofence.name, null);
+      env.project?.saveEvent(new GeofenceEvent(geofence.name, false, ev.getData(), wasInside));
+      tryOpenTaskOrForm(geofence, false);
+    }
 
-//     if (isInside && geofence.kind === 'speedLimit') {
-//       if (speed > geofence.speedLimit) {
-//         hadSpeedExcess = true;
-//         onSpeedExcess(ev, geofence);
-//       }
-//     }
+    if (isInside && geofence.kind === 'speedLimit') {
+      if (speed > geofence.speedLimit) {
+        hadSpeedExcess = true;
+        onSpeedExcess(ev, geofence);
+      }
+    }
 
-//     if (geofence.kind === 'showForm') {
-//       ensureForm(geofence.id, isInside); 
-//     }
-//   }
+    if (geofence.kind === 'showForm') {
+      ensureForm(geofence.id, isInside); 
+    }
+  }
 
-//   if (!hadSpeedExcess) {
-//     clearAlert();
-//   }
-// });
+  if (!hadSpeedExcess) {
+    clearAlert();
+  }
+});
 
 messages.on('onCall', (actId, _payload) => {
   if (actId !== ACTION_OK_OVERSPEED) {
