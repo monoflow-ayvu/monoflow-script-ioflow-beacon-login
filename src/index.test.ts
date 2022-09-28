@@ -1,26 +1,21 @@
 import * as MonoUtils from '@fermuch/monoutils';
-import * as sinon from 'sinon';
 import { GenericEvent } from './events';
-import { overSpeed$ } from './pipelines';
 const read = require('fs').readFileSync;
 const join = require('path').join;
 
-const clock = sinon.useFakeTimers();
-
-export function loadScript() {
+function loadScript() {
   // import global script
   const script = read(join(__dirname, '..', 'dist', 'bundle.js')).toString('utf-8');
   eval(script);
 }
 
-export class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
+class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
   kind = 'sensor-gps' as const;
 
   constructor(
     private readonly latitude = 1,
     private readonly longitude = 1,
     private readonly accuracy = 1,
-    private readonly speed = 1,
   ) {
     super();
   }
@@ -33,13 +28,13 @@ export class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
       accuracy: this.accuracy,
       altitudeAccuracy: 1,
       heading: 1,
-      speed: this.speed,
+      speed: 1,
     };
   }
 }
 
 describe("onInit", () => {
-  afterEach(() => { clock.restore(); });
+  jest.useFakeTimers('modern');
 
   afterEach(() => {
     // clean listeners
@@ -97,21 +92,21 @@ describe("onInit", () => {
 
     loadScript();
     messages.emit('onInit');
-    clock.setSystemTime(new Date('2020-01-01 00:00:00'));
+    jest.setSystemTime(new Date('2020-01-01 00:00:00'));
     messages.emit('onEvent', new MockGPSEvent());
     messages.emit('onEvent', new MockGPSEvent());
     messages.emit('onEvent', new MockGPSEvent());
     messages.emit('onEvent', new MockGPSEvent());
     messages.emit('onEvent', new MockGPSEvent());
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
-    clock.setSystemTime(new Date('2020-01-01 00:00:01'));
+    jest.setSystemTime(new Date('2020-01-01 00:00:01'));
     messages.emit('onEvent', new MockGPSEvent());
     messages.emit('onEvent', new MockGPSEvent());
     messages.emit('onEvent', new MockGPSEvent());
     expect(env.data.LAST_GPS_UPDATE).toBeGreaterThan(0);
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
 
-    clock.setSystemTime(new Date('2020-01-01 00:01:00'));
+    jest.setSystemTime(new Date('2020-01-01 00:01:00'));
     messages.emit('onEvent', new MockGPSEvent());
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
   });
@@ -465,8 +460,6 @@ describe('impossible values', () => {
 });
 
 describe("signal quality filters", () => {
-  afterEach(() => { clock.restore(); });
-
   afterEach(() => {
     messages.removeAllListeners();
   });
@@ -499,81 +492,18 @@ describe("signal quality filters", () => {
     messages.emit('onInit');
 
     // over the limit
-    clock.setSystemTime(new Date('2020-01-01 00:00:00'));
+    jest.setSystemTime(new Date('2020-01-01 00:00:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 11));
     expect(env.project.saveEvent).toHaveBeenCalledTimes(0);
 
     // exactly the limit
-    clock.setSystemTime(new Date('2020-01-01 00:01:00'));
+    jest.setSystemTime(new Date('2020-01-01 00:01:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 10));
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
 
     // under the limit
-    clock.setSystemTime(new Date('2020-01-01 00:02:00'));
+    jest.setSystemTime(new Date('2020-01-01 00:02:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 9));
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
   })
-});
-
-describe("pipelines", () => {
-  afterEach(() => { clock.restore(); });
-
-  beforeAll(() => {
-    const colStore = {} as Record<any, any>;
-    const mockCol = {
-      get() {
-        return {
-          data: colStore,
-          get: (k: string) => colStore[k],
-          set: (k: string, v: any) => (colStore[k] = v),
-        }
-      }
-    };
-
-    (env.project as any) = {
-      collectionsManager: {
-        ensureExists: () => mockCol,
-      },
-      saveEvent: jest.fn()
-    };
-  })
-
-  afterEach(() => {
-    // clean listeners
-    messages.removeAllListeners();
-    env.setData('LAST_GPS_UPDATE', null);
-  });
-
-  describe("overspeed", () => {
-    it('only runs once for the highest speed geofence every 5 seconds', () => {
-      getSettings = () => ({
-        enableGeofences: true,
-        geofences: [{
-          name: 'testfence',
-          kind: 'speedLimit',
-          wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
-        }]
-      });
-
-      loadScript();
-      messages.emit('onInit');
-
-      const spy = jest.fn();
-      overSpeed$.subscribe(spy);
-
-      const slowEvent = new MockGPSEvent(1, 1, 1, 1);
-      const fastEvent = new MockGPSEvent(1, 1, 1, 5);
-
-      expect(spy).not.toHaveBeenCalled();
-      messages.emit('onEvent', slowEvent);
-      messages.emit('onEvent', slowEvent);
-      messages.emit('onEvent', slowEvent);
-      messages.emit('onEvent', fastEvent);
-      messages.emit('onEvent', slowEvent);
-      messages.emit('onEvent', slowEvent);
-      clock.tick(5000);
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy.mock.calls[0][0].getData()).toStrictEqual(fastEvent.getData());
-    });
-  });
-});
+})

@@ -4,7 +4,7 @@ import TypedEmitter from "typed-emitter";
 
 // setup global environment
 beforeAll(() => {
-  // jest.useFakeTimers();
+  jest.useFakeTimers();
 
   const _mockStorage = new Map<string, string | number | boolean>();
 
