@@ -94,6 +94,43 @@ describe("onInit", () => {
     expect(saved.getData().type).toBe('custom-gps');
   });
 
+  it('stores CURRENT_GPS_POSITION on ScriptData', () => {
+    // clear if the value is already set
+    env.data.CURRENT_GPS_POSITION = undefined;
+
+    getSettings = () => ({});
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+
+    loadScript();
+    expect(env.data.CURRENT_GPS_POSITION).toBeFalsy();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+    expect(env.data.CURRENT_GPS_POSITION).toBeTruthy();
+    const data = env.data.CURRENT_GPS_POSITION as Record<string, unknown>;
+    expect(data.accuracy).toBe(1);
+    expect(data.altitude).toBe(1);
+    expect(data.latitude).toBe(1);
+    expect(data.longitude).toBe(1);
+    expect(data.heading).toBe(1);
+    expect(data.speed).toBe(1);
+    expect(data.when).toBeGreaterThan(0);
+  });
+
   it('sends only one update every X mins if saveEveryMins is set', () => {
     getSettings = () => ({
       saveGPS: true,
