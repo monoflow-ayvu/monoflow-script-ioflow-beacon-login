@@ -10,6 +10,7 @@ export type GeofenceConfig = {
   kind: 'default' | 'speedLimit' | 'openForm' | 'openTask' | 'showForm';
   wkt: string;
   speedLimit?: number;
+  speedPreLimit?: number;
   tags?: string[];
   id?: string;
   when?: {onEnter: boolean; onExit: boolean};
@@ -22,6 +23,7 @@ export type Config = {
   enableGeofences: boolean;
   geofences: GeofenceConfig[];
   speedLimit: number;
+  speedPreLimit: number;
   overspeedActivityFilter: boolean;
 
   highAccuracy: boolean;

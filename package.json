@@ -28,6 +28,28 @@
         "input": true
       },
       {
+        "label": "Alertar velocidade desde (pre-alarma; 0 = desativar)",
+        "suffix": "KM/H",
+        "mask": false,
+        "tableView": false,
+        "defaultValue": 0,
+        "delimiter": false,
+        "requireDecimal": false,
+        "inputFormat": "plain",
+        "truncateMultipleSpaces": false,
+        "validate": {
+          "required": true
+        },
+        "key": "speedPreLimit",
+        "conditional": {
+          "show": true,
+          "when": "saveGPS",
+          "eq": "true"
+        },
+        "type": "number",
+        "input": true
+      },
+      {
         "label": "Filtrar excesos de velocidade com detecção de atividade?",
         "tableView": false,
         "key": "overspeedActivityFilter",
@@ -111,9 +133,6 @@
         "requireDecimal": false,
         "inputFormat": "plain",
         "truncateMultipleSpaces": false,
-        "validate": {
-          "required": false
-        },
         "key": "maxAccuracy",
         "conditional": {
           "show": true,
@@ -250,6 +269,28 @@
               "required": true
             },
             "key": "speedLimit",
+            "conditional": {
+              "show": true,
+              "when": "geofences.kind",
+              "eq": "speedLimit"
+            },
+            "type": "number",
+            "input": true
+          },
+          {
+            "label": "Alerta pre-límite",
+            "tooltip": "Velocidade mínima para iniciar os alarmes de velocidade.",
+            "suffix": "KM/H",
+            "mask": false,
+            "tableView": false,
+            "delimiter": false,
+            "requireDecimal": false,
+            "inputFormat": "plain",
+            "truncateMultipleSpaces": false,
+            "validate": {
+              "required": true
+            },
+            "key": "speedPreLimit",
             "conditional": {
               "show": true,
               "when": "geofences.kind",

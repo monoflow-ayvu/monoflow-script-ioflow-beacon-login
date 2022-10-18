@@ -53,6 +53,10 @@ function handleOverspeed(ev: GPSSensorEvent, name: string, limit: number) {
   }
 }
 
+function handleSpeedAlert(ev: GPSSensorEvent, name: string, limit: number) {
+  
+}
+
 let lastGpsSensorRead = 0;
 let positionsCache: GPSSensorEvent[] = [];
 
@@ -74,9 +78,12 @@ export function onOverspeed(newEvent: GPSSensorEvent) {
   let hadSpeedExcess = false;
 
   const speedLimit = conf.get('speedLimit', Infinity);
+  const alertMinimum = conf.get('speedPreLimit', 0);
   if (speed > speedLimit) {
     handleOverspeed(ev, 'default', speedLimit);
     hadSpeedExcess = true;
+  } else if (alertMinimum > 0 && speed >= alertMinimum) {
+    handleSpeedAlert(ev, 'default', alertMinimum);
   }
 
   const speedGeofences = conf.get('enableGeofences', false)
@@ -87,9 +94,12 @@ export function onOverspeed(newEvent: GPSSensorEvent) {
 
   for (const fence of speedGeofences) {
     const isInside = geofenceCache.isInside(fence.name, ev.getData());
+    const fenceAlertMinimum = fence.speedPreLimit || 0;
     if (isInside && speed > fence.speedLimit) {
       hadSpeedExcess = true;
       handleOverspeed(ev, fence.name, fence.speedLimit);
+    } else if (fenceAlertMinimum > 0 && speed >= fenceAlertMinimum) {
+      handleSpeedAlert(ev, fence.name, fence.speedLimit);
     }
   }
 
