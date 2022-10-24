@@ -16,6 +16,7 @@ class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
     private readonly latitude = 1,
     private readonly longitude = 1,
     private readonly accuracy = 1,
+    private readonly speed = 1,
   ) {
     super();
   }
@@ -28,7 +29,7 @@ class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
       accuracy: this.accuracy,
       altitudeAccuracy: 1,
       heading: 1,
-      speed: 1,
+      speed: this.speed,
     };
   }
 }
@@ -606,5 +607,186 @@ describe("signal quality filters", () => {
     jest.setSystemTime(new Date('2020-01-01 00:02:00'));
     messages.emit('onEvent', new MockGPSEvent(1, 1, 9));
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
-  })
-})
+  });
+});
+
+describe("pre-alert", () => {
+  it('does NOT show pre-alert if speedPreLimit == 0', () => {
+    getSettings = () => ({
+      speedPreLimit: 0,
+      speedLimit: 10,
+    });
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+    platform.setUrgentNotification = jest.fn();
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(env.project.saveEvent).not.toHaveBeenCalled();
+    expect(platform.setUrgentNotification).not.toHaveBeenCalled();
+  });
+
+  it('shows pre-alert if speedPreLimit > 0', () => {
+    getSettings = () => ({
+      speedPreLimit: 0.42,
+      speedLimit: 10,
+    });
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+    platform.setUrgentNotification = jest.fn();
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(env.project.saveEvent).not.toHaveBeenCalled();
+    expect(platform.setUrgentNotification).toHaveBeenCalledTimes(1);
+
+    const call = (platform.setUrgentNotification as jest.Mock<any, any>).mock.calls[0];
+    expect(call[0].title).toBe('Perto do límite de velocidade');
+  });
+
+  it('shows pre-alert if speedPreLimit > 0, on a geofence', () => {
+    getSettings = () => ({
+      enableGeofences: true,
+      geofences: [{
+        name: 'speedfence',
+        kind: 'speedLimit',
+        wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+        speedLimit: 10,
+        speedPreLimit: 0.42,
+      }]
+    });
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+    platform.setUrgentNotification = jest.fn();
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(env.project.saveEvent).not.toHaveBeenCalled();
+    expect(platform.setUrgentNotification).toHaveBeenCalledTimes(1);
+
+    const call = (platform.setUrgentNotification as jest.Mock<any, any>).mock.calls[0];
+    expect(call[0].title).toBe('Perto do límite de velocidade');
+  });
+
+  it('does NOT show pre-alert if speedPreLimit == 0, on a geofence', () => {
+    getSettings = () => ({
+      enableGeofences: true,
+      geofences: [{
+        name: 'speedfence',
+        kind: 'speedLimit',
+        wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+        speedLimit: 10,
+        speedPreLimit: 0,
+      }]
+    });
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+    platform.setUrgentNotification = jest.fn();
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(env.project.saveEvent).not.toHaveBeenCalled();
+    expect(platform.setUrgentNotification).not.toHaveBeenCalled();
+  });
+
+  it('does NOT show pre-alert if speed reaches speedLimit and surpasses speedPreLimit', () => {
+    getSettings = () => ({
+      enableGeofences: true,
+      geofences: [{
+        name: 'speedfence',
+        kind: 'speedLimit',
+        wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+        speedLimit: 0.42,
+        speedPreLimit: 0.10,
+      }]
+    });
+    const colStore = {} as Record<any, any>;
+    const mockCol = {
+      get() {
+        return {
+          data: colStore,
+          get: (k: string) => colStore[k],
+          set: (k: string, v: any) => (colStore[k] = v),
+        }
+      }
+    };
+    (env.project as any) = {
+      collectionsManager: {
+        ensureExists: () => mockCol,
+      },
+      saveEvent: jest.fn()
+    };
+    platform.setUrgentNotification = jest.fn();
+
+    loadScript();
+    messages.emit('onInit');
+    messages.emit('onEvent', new MockGPSEvent());
+
+    expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
+    expect(platform.setUrgentNotification).not.toHaveBeenCalled();
+  });
+});

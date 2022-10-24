@@ -53,8 +53,18 @@ function handleOverspeed(ev: GPSSensorEvent, name: string, limit: number) {
   }
 }
 
-function handleSpeedAlert(ev: GPSSensorEvent, name: string, limit: number) {
-  
+function handleSpeedAlert(_ev: GPSSensorEvent, _name: string, _limit: number) {
+  setUrgentNotification({
+    title: 'Perto do límite de velocidade',
+    color: '#d09885',
+    message: 'Sua velocidade atual fica perto do límite de velocidade',
+    urgent: true,
+    actions: [{
+      action: ACTION_OK_OVERSPEED,
+      name: 'OK',
+      payload: {},
+    }],
+  });
 }
 
 let lastGpsSensorRead = 0;
@@ -101,7 +111,7 @@ export function onOverspeed(newEvent: GPSSensorEvent) {
       handleOverspeed(ev, fence.name, fence.speedLimit);
     } else if (fenceAlertMinimum > 0 && speed >= fenceAlertMinimum) {
       hadSpeedExcess = true;
-      handleSpeedAlert(ev, fence.name, fence.speedLimit);
+      handleSpeedAlert(ev, fence.name, fence.speedPreLimit);
     }
   }
 
