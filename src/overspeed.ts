@@ -84,6 +84,7 @@ export function onOverspeed(newEvent: GPSSensorEvent) {
     hadSpeedExcess = true;
   } else if (alertMinimum > 0 && speed >= alertMinimum) {
     handleSpeedAlert(ev, 'default', alertMinimum);
+    hadSpeedExcess = true;
   }
 
   const speedGeofences = conf.get('enableGeofences', false)
@@ -99,6 +100,7 @@ export function onOverspeed(newEvent: GPSSensorEvent) {
       hadSpeedExcess = true;
       handleOverspeed(ev, fence.name, fence.speedLimit);
     } else if (fenceAlertMinimum > 0 && speed >= fenceAlertMinimum) {
+      hadSpeedExcess = true;
       handleSpeedAlert(ev, fence.name, fence.speedLimit);
     }
   }
