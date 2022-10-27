@@ -673,7 +673,7 @@ describe("pre-alert", () => {
     expect(platform.setUrgentNotification).toHaveBeenCalledTimes(1);
 
     const call = (platform.setUrgentNotification as jest.Mock<any, any>).mock.calls[0];
-    expect(call[0].title).toBe('Perto do límite de velocidade');
+    expect(call[0].title).toBe('Perto do límite de velocidade para: Global');
   });
 
   it('shows pre-alert if speedPreLimit > 0, on a geofence', () => {
@@ -713,7 +713,7 @@ describe("pre-alert", () => {
     expect(platform.setUrgentNotification).toHaveBeenCalledTimes(1);
 
     const call = (platform.setUrgentNotification as jest.Mock<any, any>).mock.calls[0];
-    expect(call[0].title).toBe('Perto do límite de velocidade');
+    expect(call[0].title).toBe('Perto do límite de velocidade para: speedfence');
   });
 
   it('does NOT show pre-alert if speedPreLimit == 0, on a geofence', () => {
