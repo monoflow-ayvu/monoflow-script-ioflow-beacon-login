@@ -1,8 +1,9 @@
-import wellknown, { GeoJSONGeometry, GeoJSONPolygon } from "wellknown";
-import geoPointInPolygon from 'geo-point-in-polygon';
+import wellknown, { GeoJSONGeometry } from "wellknown";
+import pointInPolygon from '@turf/boolean-point-in-polygon';
+import {point, feature, Feature, Polygon} from '@turf/helpers';
 
 class GeofenceCache {
-  cache: Map<string, GeoJSONPolygon> = new Map();
+  cache: Map<string, Feature<Polygon>> = new Map();
 
   clear() {
     this.cache.clear();
@@ -18,17 +19,18 @@ class GeofenceCache {
     }
 
     if (geojson && geojson.type === 'Polygon') {
-      this.cache.set(name, geojson);
+      this.cache.set(name, feature<Polygon>(geojson));
     }
   }
 
-  isInside(geofenceName: string, position: {latitude: number; longitude: number}): boolean {
+  isInside(geofenceName: string, position: { latitude: number; longitude: number }): boolean {
     const geofence = this.cache.get(geofenceName);
     if (!geofence) {
       return false;
     }
 
-    return geoPointInPolygon([position.longitude, position.latitude], geofence.coordinates[0]) as boolean;
+    const p = point([position.latitude, position.longitude]);
+    return pointInPolygon(p, geofence);
   }
 }
 
