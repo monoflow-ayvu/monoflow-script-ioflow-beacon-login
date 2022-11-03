@@ -527,7 +527,7 @@
     "@types/node": "18.11.9",
     "@types/uuid": "8.3.4",
     "@types/wellknown": "0.5.3",
-    "babel-loader": "9.0.1",
+    "babel-loader": "9.1.0",
     "brotli-webpack-plugin": "1.1.0",
     "commander": "9.4.1",
     "compression-webpack-plugin": "10.0.0",
