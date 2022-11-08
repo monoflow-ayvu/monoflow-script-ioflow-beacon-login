@@ -116,3 +116,28 @@ export class SpeedExcessEvent extends MonoUtils.wk.event.BaseEvent {
     }
   }
 }
+
+export class SpeedPreExcessEvent extends MonoUtils.wk.event.BaseEvent {
+  kind = 'speed-pre-excess' as const;
+  private gpsData: ReturnType<GPSSensorEvent['getData']>;
+  private name: string;
+  private speedLimit: number;
+
+  constructor(name: string, ev: ReturnType<GPSSensorEvent['getData']>, speedLimit: number) {
+    super();
+    this.name = name;
+    this.gpsData = ev;
+    this.speedLimit = speedLimit;
+  }
+
+  getData() {
+    return {
+      deviceId: MonoUtils.myID(),
+      login: MonoUtils.currentLogin(),
+      when: Date.now(),
+      gps: this.gpsData,
+      speedLimit: this.speedLimit,
+      name: this.name,
+    }
+  }
+}

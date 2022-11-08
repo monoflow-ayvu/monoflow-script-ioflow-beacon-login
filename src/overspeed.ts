@@ -1,6 +1,6 @@
 import { conf } from "./config";
 import { ACTION_OK_OVERSPEED } from "./constants";
-import { GPSSensorEvent, SpeedExcessEvent } from "./events";
+import { GPSSensorEvent, SpeedExcessEvent, SpeedPreExcessEvent } from "./events";
 import { geofenceCache } from "./geofence_cache";
 import { anyTagMatches, clearAlert, setUrgentNotification } from "./utils";
 
@@ -53,7 +53,7 @@ function handleOverspeed(ev: GPSSensorEvent, name: string, limit: number) {
   }
 }
 
-function handleSpeedAlert(_ev: GPSSensorEvent, name: string, limit: number) {
+function handleSpeedAlert(ev: GPSSensorEvent, name: string, limit: number) {
   setUrgentNotification({
     title: `Perto do límite de velocidade para: ${name}`,
     color: '#d09885',
@@ -65,6 +65,14 @@ function handleSpeedAlert(_ev: GPSSensorEvent, name: string, limit: number) {
       payload: {},
     }],
   });
+
+  env.project?.saveEvent(
+    new SpeedPreExcessEvent(
+      name || 'default',
+      ev.getData(),
+      limit
+    )
+  );
 }
 
 let lastGpsSensorRead = 0;
