@@ -117,7 +117,7 @@ export function onOverspeed(newEvent: GPSSensorEvent) {
     if (isInside && speed > fence.speedLimit) {
       hadSpeedExcess = true;
       handleOverspeed(ev, fence.name, fence.speedLimit);
-    } else if (fenceAlertMinimum > 0 && speed >= fenceAlertMinimum) {
+    } else if (isInside && fenceAlertMinimum > 0 && speed >= fenceAlertMinimum) {
       hadSpeedExcess = true;
       handleSpeedAlert(ev, fence.name, fence.speedLimit);
     }
