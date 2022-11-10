@@ -1,5 +1,6 @@
 import * as MonoUtils from '@fermuch/monoutils';
 import type { GenericEvent } from './events';
+import { conf } from "./config";
 const read = require('fs').readFileSync;
 const join = require('path').join;
 
@@ -41,6 +42,7 @@ describe("onInit", () => {
     // clean listeners
     messages.removeAllListeners();
     env.setData('LAST_GPS_UPDATE', null);
+    conf.reload();
   });
 
   it('loads the script correctly', () => {
@@ -411,6 +413,7 @@ describe("onInit", () => {
 describe('impossible values', () => {
   afterEach(() => {
     messages.removeAllListeners();
+    conf.reload();
   });
 
   it('does not block normal events when speed is normal', () => {
@@ -478,7 +481,12 @@ describe('impossible values', () => {
           maxSpeed: 0.1,
         }],
       });
-    })
+    });
+
+    afterEach(() => {
+      messages.removeAllListeners();
+      conf.reload();
+    });
 
     it('does not apply to untagged devices', () => {
       const colStore = {} as Record<any, any>;
@@ -538,6 +546,7 @@ describe('impossible values', () => {
 describe("signal quality filters", () => {
   afterEach(() => {
     messages.removeAllListeners();
+    conf.reload();
   });
 
   it("omitNotGPS=true omits signals from NOT the gps", () => {
@@ -611,6 +620,11 @@ describe("signal quality filters", () => {
 });
 
 describe("pre-alert", () => {
+  afterEach(() => {
+    messages.removeAllListeners();
+    conf.reload();
+  });
+
   it('does NOT show pre-alert if speedPreLimit == 0', () => {
     getSettings = () => ({
       speedPreLimit: 0,
@@ -679,6 +693,8 @@ describe("pre-alert", () => {
   it('shows pre-alert if speedPreLimit > 0, on a geofence', () => {
     getSettings = () => ({
       enableGeofences: true,
+      speedPreLimit: 0,
+      speedLimit: 10000,
       geofences: [{
         name: 'speedfence',
         kind: 'speedLimit',
@@ -708,6 +724,8 @@ describe("pre-alert", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
+
+    console.dir((platform.setUrgentNotification as jest.Mock<any, any>).mock.calls, {depth: 9999})
 
     // expect(env.project.saveEvent).not.toHaveBeenCalled();
     expect(platform.setUrgentNotification).toHaveBeenCalledTimes(1);

@@ -75,21 +75,22 @@ function handleSpeedAlert(ev: GPSSensorEvent, name: string, limit: number) {
   );
 }
 
-let lastGpsSensorRead = 0;
-let positionsCache: GPSSensorEvent[] = [];
+// let lastGpsSensorRead = 0;
+// let positionsCache: GPSSensorEvent[] = [];
 
-export function onOverspeed(newEvent: GPSSensorEvent) {
-  positionsCache.push(newEvent);
-  // only once per 5 seconds
-  const now = Date.now();
-  if ((now - lastGpsSensorRead) / 1000 < 5) {
-    return;
-  }
-  lastGpsSensorRead = Date.now();
+export function onOverspeed(ev: GPSSensorEvent) {
+  // NOTE: the cache is disabled, for now. Some errors where positions are lost have been recorded.
+  // positionsCache.push(newEvent);
+  // // only once per 5 seconds
+  // const now = Date.now();
+  // if ((now - lastGpsSensorRead) / 1000 < 5) {
+  //   return;
+  // }
+  // lastGpsSensorRead = Date.now();
 
-  // impossible to have less than one event
-  const ev = positionsCache.sort((a, b) => b.getData().speed - a.getData().speed)[0]
-  positionsCache = [];
+  // // impossible to have less than one event
+  // const ev = positionsCache.sort((a, b) => b.getData().speed - a.getData().speed)[0]
+  // positionsCache = [];
 
   const data = ev.getData();
   const speed = data.speed * 3.6;
@@ -97,7 +98,7 @@ export function onOverspeed(newEvent: GPSSensorEvent) {
 
   const speedLimit = conf.get('speedLimit', Infinity);
   const alertMinimum = conf.get('speedPreLimit', 0);
-  if (speed > speedLimit) {
+  if (speed >= speedLimit) {
     handleOverspeed(ev, 'default', speedLimit);
     hadSpeedExcess = true;
   } else if (alertMinimum > 0 && speed >= alertMinimum) {
@@ -112,14 +113,15 @@ export function onOverspeed(newEvent: GPSSensorEvent) {
     : [];
 
   for (const fence of speedGeofences) {
-    const isInside = geofenceCache.isInside(fence.name, ev.getData());
+    const isInside = geofenceCache.isInside(fence.name, data);
     const fenceAlertMinimum = fence.speedPreLimit || 0;
-    if (isInside && speed > fence.speedLimit) {
+    const fenceSpeedLimit = Number(fence.speedLimit);
+    if (isInside && speed >= fenceSpeedLimit) {
       hadSpeedExcess = true;
       handleOverspeed(ev, fence.name, fence.speedLimit);
     } else if (isInside && fenceAlertMinimum > 0 && speed >= fenceAlertMinimum) {
       hadSpeedExcess = true;
-      handleSpeedAlert(ev, fence.name, fence.speedLimit);
+      handleSpeedAlert(ev, fence.name, fenceSpeedLimit);
     }
   }
 
