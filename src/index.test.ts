@@ -10,6 +10,10 @@ function loadScript() {
   eval(script);
 }
 
+const complexFence = 'POLYGON ((-50.92296123504639 -29.936118351698703, -50.923025608062744 -29.93659251898045, -50.923991203308105 -29.939000510100893, -50.92437744140625 -29.942105709903213, -50.91386318206787 -29.941994147517157, -50.90613842010498 -29.94215219419381, -50.901761054992676 -29.93836830185822, -50.90914249420166 -29.9331803236537, -50.91546177864075 -29.93216686980655, -50.921781063079834 -29.9336080166756, -50.92291831970215 -29.93559769482562, -50.92296123504639 -29.936118351698703))';
+const pointInside = [-29.9380496, -50.9176504];
+const pointOutside = [-23.12345, -40.123456];
+
 class MockGPSEvent extends MonoUtils.wk.event.BaseEvent {
   kind = 'sensor-gps' as const;
 
@@ -183,7 +187,7 @@ describe("onInit", () => {
       geofences: [{
         name: 'testfence',
         kind: 'default',
-        wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+        wkt: complexFence,
       }]
     });
 
@@ -207,7 +211,7 @@ describe("onInit", () => {
 
     loadScript();
     messages.emit('onInit');
-    messages.emit('onEvent', new MockGPSEvent());
+    messages.emit('onEvent', new MockGPSEvent(pointInside[0], pointInside[1]));
 
     expect(colStore['testfence']).toBeTruthy();
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
@@ -218,7 +222,7 @@ describe("onInit", () => {
 
     loadScript();
     messages.emit('onInit');
-    messages.emit('onEvent', new MockGPSEvent(200, 200));
+    messages.emit('onEvent', new MockGPSEvent(pointOutside[0], pointOutside[1]));
 
     expect(colStore['testfence']).toBeFalsy();
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
@@ -234,7 +238,7 @@ describe("onInit", () => {
       geofences: [{
         name: 'testfence',
         kind: 'default',
-        wkt: 'POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))',
+        wkt: complexFence,
         tags: ['foo', 'bar', 'zaz']
       }]
     });
@@ -265,7 +269,7 @@ describe("onInit", () => {
 
     loadScript();
     messages.emit('onInit');
-    messages.emit('onEvent', new MockGPSEvent());
+    messages.emit('onEvent', new MockGPSEvent(pointInside[0], pointInside[1]));
 
     expect(colStore['testfence']).toBeTruthy();
     expect(env.project.saveEvent).toHaveBeenCalledTimes(1);
@@ -276,7 +280,7 @@ describe("onInit", () => {
 
     loadScript();
     messages.emit('onInit');
-    messages.emit('onEvent', new MockGPSEvent(200, 200));
+    messages.emit('onEvent', new MockGPSEvent(pointOutside[0], pointOutside[1]));
 
     expect(colStore['testfence']).toBeFalsy();
     expect(env.project.saveEvent).toHaveBeenCalledTimes(2);
@@ -511,11 +515,11 @@ describe('impossible values', () => {
           }]
         }
       };
-  
+
       loadScript();
       messages.emit('onInit');
       messages.emit('onEvent', new MockGPSEvent());
-  
+
       // only 
       expect(env.project.saveEvent).toHaveBeenCalled();
     });
@@ -724,8 +728,6 @@ describe("pre-alert", () => {
     loadScript();
     messages.emit('onInit');
     messages.emit('onEvent', new MockGPSEvent());
-
-    console.dir((platform.setUrgentNotification as jest.Mock<any, any>).mock.calls, {depth: 9999})
 
     // expect(env.project.saveEvent).not.toHaveBeenCalled();
     expect(platform.setUrgentNotification).toHaveBeenCalledTimes(1);

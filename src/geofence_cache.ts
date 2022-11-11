@@ -29,7 +29,7 @@ class GeofenceCache {
       return false;
     }
 
-    const p = point([position.latitude, position.longitude]);
+    const p = point([position.longitude, position.latitude]);
     return pointInPolygon(p, geofence);
   }
 }
