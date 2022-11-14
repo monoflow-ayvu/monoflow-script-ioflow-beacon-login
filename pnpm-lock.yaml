@@ -17,7 +17,7 @@ specifiers:
   '@types/lodash': 4.14.188
   '@types/node': 18.11.9
   '@types/uuid': 8.3.4
-  '@types/wellknown': 0.5.3
+  '@types/wellknown': 0.5.4
   babel-loader: 9.1.0
   brotli-webpack-plugin: 1.1.0
   commander: 9.4.1
@@ -64,7 +64,7 @@ devDependencies:
   '@types/lodash': 4.14.188
   '@types/node': 18.11.9
   '@types/uuid': 8.3.4
-  '@types/wellknown': 0.5.3
+  '@types/wellknown': 0.5.4
   babel-loader: 9.1.0_npabyccmuonwo2rku4k53xo3hi
   brotli-webpack-plugin: 1.1.0
   commander: 9.4.1
@@ -2430,8 +2430,8 @@ packages:
     resolution: {integrity: sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==}
     dev: true
 
-  /@types/wellknown/0.5.3:
-    resolution: {integrity: sha512-7JP3zlX5+IhRZzlncreuT7N0jA6bJ4ypBGi+BtAmQOz82OPK39ughYrIEjXW9jDv+6kL7FKSfpe0P2F/WMciFw==}
+  /@types/wellknown/0.5.4:
+    resolution: {integrity: sha512-zcsf4oHeEcvpvWhDOB1+qNK04oFJtsmv7Otb1Vy8w8GAqQkgRrVkI/C76PdwtpiT216aM1SbhkKgKWzGLhHKng==}
     dev: true
 
   /@types/yargs-parser/21.0.0:
