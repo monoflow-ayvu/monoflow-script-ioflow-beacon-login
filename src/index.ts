@@ -111,6 +111,9 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
     }
   }
 
+  const rawSpeed = ev.getData().speed;
+  env.setData('CURRENT_SPEED_KMH', rawSpeed > 0.0 ? rawSpeed * 3.6 : 0.0);
+
   onOverspeed(ev);
   onGefence(ev);
   onPosition(ev);
