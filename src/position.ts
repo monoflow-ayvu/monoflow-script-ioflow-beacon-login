@@ -2,14 +2,14 @@ import * as MonoUtils from "@fermuch/monoutils";
 import { conf } from "./config";
 import { GenericEvent, GPSSensorEvent } from "./events";
 
-let lastGpsSensorRead = 0;
+// let lastGpsSensorRead = 0;
 export function onPosition(ev: GPSSensorEvent) {
-  // only once per 8 seconds
-  const now = Date.now();
-  if ((now - lastGpsSensorRead) / 1000 < 8) {
-    return;
-  }
-  lastGpsSensorRead = Date.now();
+  // // only once per 3 seconds
+  // const now = Date.now();
+  // if ((now - lastGpsSensorRead) / 1000 < 3) {
+  //   return;
+  // }
+  // lastGpsSensorRead = Date.now();
 
   const data = ev.getData();
 

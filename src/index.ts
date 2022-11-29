@@ -31,8 +31,8 @@ messages.on('onInit', function () {
   });
 
   // config for GPS requests
-  env.setData('GPS_TIMEOUT', 1000 * 120);
-  env.setData('GPS_MAXIMUM_AGE', 1000 * 120);
+  env.setData('GPS_TIMEOUT', 1000 * 30);
+  env.setData('GPS_MAXIMUM_AGE', 1000 * 30);
   env.setData('GPS_HIGH_ACCURACY', conf.get('highAccuracy', true));
   env.setData('GPS_DISTANCE_FILTER', 5);
   env.setData('GPS_USE_SIGNIFICANT_CHANGES', true);
@@ -76,6 +76,8 @@ messages.on('onLogout', () => {
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   const data = ev.getData();
   const speed = data?.speed * 3.6 || -1;
+  env.setData('CURRENT_SPEED_KMH', speed > 0.0 ? speed : 0.0);
+
   if (conf.get('omitNotGPS', false) === true) {
     if (
       // these settings are only provided by the GPS sensor
@@ -110,9 +112,6 @@ MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
       return; // cancel this event
     }
   }
-
-  const rawSpeed = ev.getData().speed;
-  env.setData('CURRENT_SPEED_KMH', rawSpeed > 0.0 ? rawSpeed * 3.6 : 0.0);
 
   onOverspeed(ev);
   onGefence(ev);
