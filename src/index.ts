@@ -76,7 +76,7 @@ messages.on('onLogout', () => {
 MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
   const data = ev.getData();
   const speed = data?.speed * 3.6 || -1;
-  env.setData('CURRENT_SPEED_KMH', speed > 0.0 ? speed : 0.0);
+  env.setData('CURRENT_SPEED_KMH', speed > 0.0 ? speed : 0.001);
 
   if (conf.get('omitNotGPS', false) === true) {
     if (
