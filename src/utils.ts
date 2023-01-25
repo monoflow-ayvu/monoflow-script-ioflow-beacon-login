@@ -96,11 +96,12 @@ export function ensureForm(formId: string, show: boolean) {
   }
 }
 
-export function anyTagMatches(tags: string[]): boolean {
+export function anyTagMatches(tags: string[], loginId?: string): boolean {
   // we always match if there are no tags
   if (!tags || tags.length === 0) return true;
 
-  const userTags = env.project?.logins?.find((login) => login.key === currentLogin())?.tags || [];
+  const loginName = loginId || currentLogin() || '';
+  const userTags = env.project?.logins?.find((login) => login.key === loginName || login.$modelId === loginName)?.tags || [];
   const deviceTags = env.project?.usersManager?.users?.find?.((u) => u.$modelId === myID())?.tags || [];
   const allTags = [...userTags, ...deviceTags];
 
@@ -146,4 +147,16 @@ export function getGeofenceManager(): GeofenceManager | null {
     return (platform as unknown as { geofence: GeofenceManager }).geofence
   }
   return null
+}
+
+export function myFences(kind?: GeofenceConfig['kind']) {
+  if (!conf.get('enableGeofences', false)) {
+    return []
+  }
+  const fences = conf.get('geofences', []).filter((g) => anyTagMatches(g.tags)) || []
+  if (kind) {
+    return fences.filter((f) => f.kind === kind);
+  } else {
+    return fences;
+  }
 }

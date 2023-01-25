@@ -8,6 +8,7 @@ import { ACTION_OK_OVERSPEED } from "./constants";
 // import { onPosition } from "./position";
 // import { geofenceCache } from "./geofence_cache";
 import wellknown, { GeoJSONGeometry } from "wellknown";
+import { onOverspeed } from "./overspeed";
 
 const originalFormStates: {
   [id: string]: {
@@ -39,13 +40,14 @@ messages.on('onInit', function () {
   loadGeofences();
 });
 
-function loadGeofences() {
+function loadGeofences(loginId?: string) {
   const manager = getGeofenceManager();
   manager?.clearGeofences();
 
   // pre cache all geofences
   if (conf.get('enableGeofences', false)) {
-    for (const geofence of conf.get('geofences', [])) {
+    const geofences = conf.get('geofences', []).filter((g) => anyTagMatches(g.tags, loginId));
+    for (const geofence of geofences) {
       let geojson: GeoJSONGeometry | undefined;
       try {
         geojson = wellknown.parse(geofence.wkt);
@@ -74,6 +76,10 @@ messages.on('onLogout', () => {
   restoreforms();
   getGeofenceManager()?.clearGeofences();
 });
+
+messages.on('onLogin', (loginId) => {
+  loadGeofences(loginId);
+})
 
 MonoUtils.wk.event.subscribe<SpeedEvent>('sensor-speed', (ev) => {
   const speed = ev.getData().speed * 3.6 || -1;
@@ -122,7 +128,8 @@ MonoUtils.wk.event.subscribe<PositionEvent>('sensor-gps', (ev) => {
     }
   }
 
-  platform.log('sensor-gps', ev);
+  // handle overspeed
+  onOverspeed(ev);
 })
 
 // MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
