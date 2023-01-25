@@ -36,8 +36,6 @@ function setLoginFor(loginId: string | null) {
 };
 
 messages.on('onPeriodic', () => {
-  platform.log('onPeriodic!');
-
   if (synced === true) {
     return
   }
