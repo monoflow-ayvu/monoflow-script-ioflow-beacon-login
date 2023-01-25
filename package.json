@@ -1,6 +1,6 @@
 {
   "name": "beacon-login",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Ao fazer login, ignorar beacon na placa IOFlow.",
   "settingsSchema": {
     "display": "form",
