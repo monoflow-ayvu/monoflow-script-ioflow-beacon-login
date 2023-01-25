@@ -31,6 +31,7 @@ function setLoginFor(loginId: string | null) {
   if (toSync !== mac) {
     toSync = mac;
     synced = false;
+    rpcSent = 0;
   }
 };
 
@@ -39,9 +40,8 @@ messages.on('onPeriodic', () => {
     return
   }
 
-  // 5 minute between sync tries
-  // (after syncing, rpcSent is set to 0 so this is only a timeout)
-  if ((Date.now() - rpcSent) / 1000 < (60 * 5)) {
+  // 10 seconds between sync tries
+  if ((Date.now() - rpcSent) / 1000 < 10) {
     return;
   }
 
