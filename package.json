@@ -6,131 +6,7 @@
     "display": "form",
     "components": [
       {
-        "label": "Velocidade límite (0 = desativar velocidade límite)",
-        "suffix": "KM/H",
-        "mask": false,
-        "tableView": false,
-        "defaultValue": 0,
-        "delimiter": false,
-        "requireDecimal": false,
-        "inputFormat": "plain",
-        "truncateMultipleSpaces": false,
-        "validate": {
-          "required": true
-        },
-        "key": "speedLimit",
-        "conditional": {
-          "show": true,
-          "when": "saveGPS",
-          "eq": "true"
-        },
-        "type": "number",
-        "input": true
-      },
-      {
-        "label": "Alertar velocidade desde (pre-alarma; 0 = desativar)",
-        "suffix": "KM/H",
-        "mask": false,
-        "tableView": false,
-        "defaultValue": 0,
-        "delimiter": false,
-        "requireDecimal": false,
-        "inputFormat": "plain",
-        "truncateMultipleSpaces": false,
-        "validate": {
-          "required": true
-        },
-        "key": "speedPreLimit",
-        "conditional": {
-          "show": true,
-          "when": "saveGPS",
-          "eq": "true"
-        },
-        "type": "number",
-        "input": true
-      },
-      {
-        "label": "Filtrar excesos de velocidade com detecção de atividade?",
-        "tableView": false,
-        "key": "overspeedActivityFilter",
-        "type": "checkbox",
-        "input": true,
-        "defaultValue": true
-      },
-      {
-        "label": "Alertar ao usuario ao ter um excesso de velocidade?",
-        "tableView": false,
-        "key": "warnUserOverspeed",
-        "type": "checkbox",
-        "input": true,
-        "defaultValue": false
-      },
-      {
-        "label": "Parar alerta automaticamente se a velocidad descer do límite?",
-        "tableView": false,
-        "key": "autoDisableOverSpeedAlert",
-        "conditional": {
-          "show": true,
-          "when": "warnUserOverspeed",
-          "eq": "true"
-        },
-        "type": "checkbox",
-        "input": true,
-        "defaultValue": true
-      },
-      {
-        "label": "Permitir ao usuario parar alerta clicando botão OK?",
-        "tableView": false,
-        "defaultValue": true,
-        "key": "showOkButtonForAlert",
-        "conditional": {
-          "show": true,
-          "when": "autoDisableOverSpeedAlert",
-          "eq": "true"
-        },
-        "type": "checkbox",
-        "input": true
-      },
-      {
-        "label": "Salvar posições GPS?",
-        "tableView": false,
-        "defaultValue": true,
-        "key": "saveGPS",
-        "type": "checkbox",
-        "input": true
-      },
-      {
-        "label": "Cada quantos minutos salvar posições? (0 = salvar sempre que tiver uma)",
-        "suffix": "Minutos",
-        "mask": false,
-        "tableView": false,
-        "defaultValue": 0,
-        "delimiter": false,
-        "requireDecimal": false,
-        "inputFormat": "plain",
-        "truncateMultipleSpaces": false,
-        "validate": {
-          "required": true
-        },
-        "key": "saveEveryMins",
-        "conditional": {
-          "show": true,
-          "when": "saveGPS",
-          "eq": "true"
-        },
-        "type": "number",
-        "input": true
-      },
-      {
-        "label": "Habilitar geocercas?",
-        "tableView": false,
-        "key": "enableGeofences",
-        "type": "checkbox",
-        "input": true,
-        "defaultValue": false
-      },
-      {
-        "label": "Geocercas",
+        "label": "Beacons",
         "reorder": false,
         "addAnotherPosition": "bottom",
         "layoutFixed": false,
@@ -138,213 +14,34 @@
         "initEmpty": false,
         "tableView": false,
         "defaultValue": [
-          {
-            "name": "",
-            "kind": "default",
-            "wkt": ""
-          }
+          {}
         ],
-        "key": "geofences",
-        "conditional": {
-          "show": true,
-          "when": "enableGeofences",
-          "eq": "true"
-        },
+        "key": "beacons",
         "type": "datagrid",
         "input": true,
         "components": [
           {
-            "label": "Nome",
+            "label": "Login",
             "tableView": true,
             "validate": {
               "required": true
             },
-            "key": "name",
+            "unique": true,
+            "key": "login",
             "type": "textfield",
             "input": true
           },
           {
-            "label": "Tipo",
-            "widget": "choicesjs",
+            "label": "MAC",
+            "inputMask": "**:**:**:**:**:**",
+            "displayMask": "**:**:**:**:**:**",
             "tableView": true,
-            "defaultValue": "default",
-            "data": {
-              "values": [
-                {
-                  "label": "Padrão",
-                  "value": "default"
-                },
-                {
-                  "label": "Velocidade Límite",
-                  "value": "speedLimit"
-                },
-                {
-                  "label": "Abrir form",
-                  "value": "openForm"
-                },
-                {
-                  "label": "Abrir tarefa",
-                  "value": "openTask"
-                },
-                {
-                  "label": "Mostrar form",
-                  "value": "showForm"
-                }
-              ]
-            },
+            "case": "uppercase",
             "validate": {
-              "required": true
+              "custom": "valid = /(([0-9A-F]{2}[:-]?){6})/.test(input) ? true : 'MAC inválida';"
             },
-            "key": "kind",
-            "type": "select",
-            "case": "lowercase",
-            "input": true
-          },
-          {
-            "label": "Geocerca WKT",
-            "placeholder": "POLYGON(...",
-            "tooltip": "Geocerca no formato WKT (Well-Known Text)",
-            "autoExpand": false,
-            "tableView": true,
-            "validate": {
-              "custom": "valid = /^POLYGON(\\s+)?\\(.*\\)$/.test(input) ? true : 'Geocerca inválida';"
-            },
-            "key": "wkt",
-            "type": "textarea",
-            "input": true
-          },
-          {
-            "label": "Velocidade límite",
-            "suffix": "KM/H",
-            "mask": false,
-            "tableView": false,
-            "delimiter": false,
-            "requireDecimal": false,
-            "inputFormat": "plain",
-            "truncateMultipleSpaces": false,
-            "validate": {
-              "required": true
-            },
-            "key": "speedLimit",
-            "conditional": {
-              "show": true,
-              "when": "geofences.kind",
-              "eq": "speedLimit"
-            },
-            "type": "number",
-            "input": true
-          },
-          {
-            "label": "Alerta pre-límite",
-            "tooltip": "Velocidade mínima para iniciar os alarmes de velocidade.",
-            "suffix": "KM/H",
-            "mask": false,
-            "tableView": false,
-            "delimiter": false,
-            "requireDecimal": false,
-            "inputFormat": "plain",
-            "truncateMultipleSpaces": false,
-            "validate": {
-              "required": true
-            },
-            "key": "speedPreLimit",
-            "conditional": {
-              "show": true,
-              "when": "geofences.kind",
-              "eq": "speedLimit"
-            },
-            "type": "number",
-            "input": true
-          },
-          {
-            "label": "Tags",
-            "tooltip": "Se pelo menos uma tag é inclusa no dispositivo, login, ou dado do usuario, a geocerca é usada com o dispositivo.\n\nSe não tiver tag, a geocerca é aplicada para todos os dispositivos.",
-            "tableView": false,
-            "storeas": "array",
-            "key": "tags",
-            "type": "tags",
-            "input": true
-          },
-          {
-            "label": "ID Tarefa/Form",
-            "tableView": true,
-            "truncateMultipleSpaces": true,
-            "validate": {
-              "required": true
-            },
-            "key": "id",
-            "customConditional": "show = row.kind === 'openForm' || row.kind === 'openTask' || row.kind === 'showForm';",
+            "key": "mac",
             "type": "textfield",
-            "autoExpand": false,
-            "input": true
-          },
-          {
-            "label": "Quando ativar",
-            "optionsLabelPosition": "right",
-            "tableView": false,
-            "values": [
-              {
-                "label": "Ao sair",
-                "value": "onExit",
-                "shortcut": ""
-              },
-              {
-                "label": "Ao entrar",
-                "value": "onEnter",
-                "shortcut": ""
-              }
-            ],
-            "key": "when",
-            "customConditional": "show = row.kind === 'openForm' || row.kind === 'openTask';",
-            "type": "selectboxes",
-            "input": true,
-            "inputType": "checkbox"
-          }
-        ]
-      },
-      {
-        "label": "Impossibilidades",
-        "tooltip": "Configurações para dados que sejam impossíveis de reportar físicamente pelos dispositivos.",
-        "reorder": true,
-        "addAnother": "Adicionar",
-        "addAnotherPosition": "bottom",
-        "layoutFixed": false,
-        "enableRowGroups": false,
-        "initEmpty": true,
-        "tableView": false,
-        "defaultValue": [
-          {
-            "tags": []
-          }
-        ],
-        "key": "impossible",
-        "type": "datagrid",
-        "input": true,
-        "components": [
-          {
-            "label": "Tags",
-            "tooltip": "Se pelo menos uma tag é inclusa no dispositivo, login, ou dado do usuario, a impossibilidade é usada com o dispositivo.\n\nSe NÃO tiver tag, a impossibilidade é aplicada para TODOS os dispositivos.",
-            "tableView": false,
-            "storeas": "array",
-            "key": "tags",
-            "type": "tags",
-            "input": true
-          },
-          {
-            "label": "Velocidade impossível",
-            "tooltip": "É impossível o dispositivo chegar até essa velocidade ou maior.",
-            "suffix": "KM/H",
-            "mask": false,
-            "tableView": false,
-            "delimiter": false,
-            "requireDecimal": false,
-            "inputFormat": "plain",
-            "truncateMultipleSpaces": false,
-            "validate": {
-              "required": true
-            },
-            "key": "maxSpeed",
-            "type": "number",
             "input": true
           }
         ]
