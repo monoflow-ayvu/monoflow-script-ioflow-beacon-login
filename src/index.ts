@@ -85,8 +85,10 @@ messages.on('onLogin', (loginId) => {
 })
 
 MonoUtils.wk.event.subscribe<SpeedEvent>('sensor-speed', (ev) => {
-  const speed = ev.getData().speed * 3.6 || -1;
+  const data = ev.getData()
+  const speed = data.speed * 3.6 || -1;
   env.setData('CURRENT_SPEED_KMH', speed > 0.0 ? speed : 0.001);
+  env.setData('CURRENT_SPEED_ACCURACY', data.accuracy || -1);
 });
 
 MonoUtils.wk.event.subscribe<PositionEvent>('sensor-gps', (ev) => {
