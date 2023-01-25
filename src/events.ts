@@ -1,8 +1,34 @@
 import * as MonoUtils from "@fermuch/monoutils";
 
-export declare class GPSSensorEvent extends MonoUtils.wk.event.BaseEvent {
-  kind: "sensor-gps";
+export declare class SpeedEvent extends MonoUtils.wk.event.BaseEvent {
+  kind: 'sensor-speed';
+
   getData(): {
+    speed: number;
+    accuracy?: number;
+  }
+}
+
+export interface PositionUpdate {
+  _pending: number;
+  accuracy: number;
+  altitude: number;
+  bearing: number;
+  bearingAccuracyDegrees: number;
+  geofences: Record<string, boolean>;
+  hasSpeedAccuracy: boolean;
+  latitude: number;
+  longitude: number;
+  provider: string;
+  speed: number;
+  speedAccuracy: number;
+  time: number;
+  verticalAccuracyMeters: number;
+}
+
+export declare class PositionEvent extends MonoUtils.wk.event.BaseEvent {
+  kind: "sensor-gps";
+  getData(): PositionUpdate & {
     latitude: number;
     longitude: number;
     altitude: number;
@@ -94,11 +120,11 @@ export class GeofenceEvent extends MonoUtils.wk.event.BaseEvent {
 
 export class SpeedExcessEvent extends MonoUtils.wk.event.BaseEvent {
   kind = 'speed-excess' as const;
-  private gpsData: ReturnType<GPSSensorEvent['getData']>;
+  private gpsData: ReturnType<PositionEvent['getData']>;
   private name: string;
   private speedLimit: number;
 
-  constructor(name: string, ev: ReturnType<GPSSensorEvent['getData']>, speedLimit: number) {
+  constructor(name: string, ev: ReturnType<PositionEvent['getData']>, speedLimit: number) {
     super();
     this.name = name;
     this.gpsData = ev;
@@ -119,11 +145,11 @@ export class SpeedExcessEvent extends MonoUtils.wk.event.BaseEvent {
 
 export class SpeedPreExcessEvent extends MonoUtils.wk.event.BaseEvent {
   kind = 'speed-pre-excess' as const;
-  private gpsData: ReturnType<GPSSensorEvent['getData']>;
+  private gpsData: ReturnType<PositionEvent['getData']>;
   private name: string;
   private speedLimit: number;
 
-  constructor(name: string, ev: ReturnType<GPSSensorEvent['getData']>, speedLimit: number) {
+  constructor(name: string, ev: ReturnType<PositionEvent['getData']>, speedLimit: number) {
     super();
     this.name = name;
     this.gpsData = ev;

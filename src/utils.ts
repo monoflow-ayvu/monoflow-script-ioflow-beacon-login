@@ -130,3 +130,20 @@ export function getGeofenceCol(): CollectionDoc<GeofenceCol> | undefined {
   const col = env.project?.collectionsManager.ensureExists<GeofenceCol>('geofence', 'Geofence');
   return col.get(myID());
 }
+
+interface Point {
+  lat: number;
+  lng: number;
+}
+
+export interface GeofenceManager {
+  addGeofence(id: string, polygon: Point[]): string;
+  clearGeofences(): void;
+}
+
+export function getGeofenceManager(): GeofenceManager | null {
+  if ('geofence' in platform) {
+    return (platform as unknown as { geofence: GeofenceManager }).geofence
+  }
+  return null
+}
