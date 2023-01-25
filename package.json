@@ -1,7 +1,7 @@
 {
-  "name": "gps",
-  "version": "4.4.0",
-  "description": "Script para GPS. Tracking GPS, geolocalización, geocercas, etc.",
+  "name": "beacon-login",
+  "version": "0.0.0",
+  "description": "Ao fazer login, ignorar beacon na placa IOFlow.",
   "settingsSchema": {
     "display": "form",
     "components": [
