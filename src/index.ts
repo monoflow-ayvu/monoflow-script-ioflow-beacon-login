@@ -66,9 +66,8 @@ messages.on('onPeriodic', () => {
   const localToSync = toSync;
   rpcSent = Date.now();
   prom
-    .then((payload) => {
-      platform.log('synced!!', typeof payload, payload);
-      if (toSync === localToSync && String(payload) === (!!localToSync ? 'true' : 'false')) {
+    .then((_payload) => {
+      if (toSync === localToSync) {
         synced = true;
       }
     })
