@@ -71,6 +71,7 @@ function loadGeofences(loginId?: string) {
 // on exit restore original form states
 messages.on('onEnd', () => {
   restoreforms();
+  getGeofenceManager()?.clearGeofences();
 });
 
 // on logout restore original form states
