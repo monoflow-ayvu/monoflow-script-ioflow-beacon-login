@@ -58,7 +58,10 @@ messages.on('onPeriodic', () => {
   }
   prom
     .then((payload) => {
-      platform.log('synced!!', payload);
+      platform.log('synced!!', typeof payload, payload);
+      if (String(payload) === 'true') {
+        synced = true;
+      }
     })
     .catch((e) => {
       platform.log('error syncing', e);
