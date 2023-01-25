@@ -66,10 +66,14 @@ messages.on('onPeriodic', () => {
   prom
     .then((_payload) => {
       if (toSync === localToSync) {
+        platform.log("monoflow and ioflow have the same login status!");
         synced = true;
       }
     })
     .catch((e) => {
       platform.log('error syncing', e);
+    })
+    .finally(() => {
+      rpcSent = 0;
     })
 });
