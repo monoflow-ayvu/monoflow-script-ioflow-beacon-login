@@ -6,10 +6,10 @@ messages.on('onInit', () => {
 });
 
 messages.on('onLogin', (loginId) => {
-  setLoginFor(loginId)
+  setLoginFor(loginId || currentLogin())
 });
 
-messages.on('onLogin', () => {
+messages.on('onLogout', () => {
   setLoginFor(null);
 });
 
