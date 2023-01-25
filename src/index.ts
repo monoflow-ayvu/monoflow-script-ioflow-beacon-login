@@ -26,6 +26,7 @@ function getMacForLoginId(loginId: string | null): string | null {
 
 function setLoginFor(loginId: string | null) {
   const mac = getMacForLoginId(loginId);
+  platform.log(`setLoginFor loginId="${loginId}" mac="${mac}"`);
   if (toSync !== mac) {
     toSync = mac;
     synced = false;
@@ -33,6 +34,8 @@ function setLoginFor(loginId: string | null) {
 };
 
 messages.on('onPeriodic', () => {
+  platform.log('onPeriodic!');
+
   if (synced === true) {
     return
   }
@@ -47,8 +50,10 @@ messages.on('onPeriodic', () => {
   }).bleRequest;
   let prom: Promise<unknown>;
   if (toSync) {
+    platform.log(`Syncing login ${toSync}`);
     prom = bleRequest('Login', {mac: toSync});
   } else {
+    platform.log('Syncing logout');
     prom = bleRequest('Logout', null);
   }
   prom
