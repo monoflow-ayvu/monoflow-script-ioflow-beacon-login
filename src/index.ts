@@ -63,11 +63,12 @@ messages.on('onPeriodic', () => {
     platform.log('Syncing logout');
     prom = bleRequest('Logout', null);
   }
+  const localToSync = toSync;
   rpcSent = Date.now();
   prom
     .then((payload) => {
       platform.log('synced!!', typeof payload, payload);
-      if (String(payload) === 'true') {
+      if (toSync === localToSync && String(payload) === (!!localToSync ? 'true' : 'false')) {
         synced = true;
       }
     })
