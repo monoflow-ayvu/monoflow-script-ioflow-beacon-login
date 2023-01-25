@@ -9,6 +9,8 @@ import { ACTION_OK_OVERSPEED } from "./constants";
 // import { geofenceCache } from "./geofence_cache";
 import wellknown, { GeoJSONGeometry } from "wellknown";
 import { onOverspeed } from "./overspeed";
+import { onGefence } from "./geofence";
+import { onPosition } from "./position";
 
 const originalFormStates: {
   [id: string]: {
@@ -106,76 +108,11 @@ MonoUtils.wk.event.subscribe<PositionEvent>('sensor-gps', (ev) => {
     }
   }
 
-  env.setData('CURRENT_GPS_POSITION', { ...data, when: Date.now() });
-  
-  // Store GPS
-  if (conf.get('saveGPS', false)) {
-    // this event is re-built like this to keep backwards compatibility
-    const event = MonoUtils.wk.event.regenerateEvent(new GenericEvent('custom-gps', {
-      ...ev.getData(),
-      // speeds is deprecated, but we still want to support it
-      speeds: [] as number[],
-    }, {
-      deviceId: MonoUtils.myID(),
-      login: MonoUtils.currentLogin() || false,
-    }));
-
-    const saveEvery = conf.get('saveEveryMins', 0);
-    const lastGpsUpdate = Number(env.data.LAST_GPS_UPDATE || '0') || 0;
-    if (saveEvery === 0 || (Date.now() - lastGpsUpdate) > saveEvery * 60 * 1000) {
-      env.setData('LAST_GPS_UPDATE', Date.now());
-      env.project?.saveEvent(event);
-    }
-  }
-
   // handle overspeed
   onOverspeed(ev);
-})
-
-// MonoUtils.wk.event.subscribe<GPSSensorEvent>('sensor-gps', (ev) => {
-//   const data = ev.getData();
-//   const speed = data?.speed * 3.6 || -1;
-//   env.setData('CURRENT_SPEED_KMH', speed > 0.0 ? speed : 0.001);
-
-//   if (conf.get('omitNotGPS', false) === true) {
-//     if (
-//       // these settings are only provided by the GPS sensor
-//       data.speed === -1
-//       || data.altitude === -1
-//       || data.heading === -1
-//       || data.accuracy === -1
-//       || speed === -1
-//     ) {
-//       return;
-//     }
-//   }
-
-//   const maxAccuracy = conf.get('maxAccuracy', 0);
-//   if (maxAccuracy > 0 && data.accuracy > maxAccuracy) {
-//     return;
-//   }
-
-//   const impossibleRules = conf.get('impossible', []);
-//   for (const impRule of impossibleRules) {
-//     platform.log('evaluating rule', impRule);
-//     // for now we only check for speed, so if no speed is giving we ignore the rule
-//     if (impRule.maxSpeed === 0) continue;
-
-//     // check for global rules
-//     if ((impRule.tags || []).length === 0 && speed > impRule.maxSpeed) {
-//       return; // cancel this event
-//     }
-
-//     // tagged rules
-//     if (anyTagMatches(impRule.tags) && speed > impRule.maxSpeed) {
-//       return; // cancel this event
-//     }
-//   }
-
-//   onOverspeed(ev);
-//   onGefence(ev);
-//   onPosition(ev);
-// });
+  onGefence(ev);
+  onPosition(ev);
+});
 
 messages.on('onCall', (actId, _payload) => {
   if (actId !== ACTION_OK_OVERSPEED) {
