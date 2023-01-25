@@ -15,6 +15,7 @@ messages.on('onLogin', () => {
 
 let synced = false;
 let toSync: string | null = null;
+let rpcSent = 0;
 
 function getMacForLoginId(loginId: string | null): string | null {
   if (!loginId) {
@@ -30,6 +31,7 @@ function setLoginFor(loginId: string | null) {
   if (toSync !== mac) {
     toSync = mac;
     synced = false;
+    rpcSent = 0;
   }
 };
 
@@ -38,6 +40,11 @@ messages.on('onPeriodic', () => {
 
   if (synced === true) {
     return
+  }
+
+  // 10 seconds between sync tries
+  if ((Date.now() - rpcSent) / 1000 < 10) {
+    return;
   }
 
   if (!('bleRequest' in platform)) {
@@ -56,6 +63,7 @@ messages.on('onPeriodic', () => {
     platform.log('Syncing logout');
     prom = bleRequest('Logout', null);
   }
+  rpcSent = Date.now();
   prom
     .then((payload) => {
       platform.log('synced!!', typeof payload, payload);
