@@ -1,8 +1,7 @@
 import { conf } from "./config";
 import { ACTION_OK_OVERSPEED } from "./constants";
 import { PositionEvent, SpeedExcessEvent, SpeedPreExcessEvent } from "./events";
-import { geofenceCache } from "./geofence_cache";
-import { anyTagMatches, clearAlert, myFences, setUrgentNotification } from "./utils";
+import { clearAlert, myFences, setUrgentNotification } from "./utils";
 
 function handleOverspeed(ev: PositionEvent, name: string, limit: number) {
   if (conf.get('overspeedActivityFilter', true)) {
@@ -92,7 +91,8 @@ export function onOverspeed(ev: PositionEvent) {
 
   const speedGeofences = myFences('speedLimit');
   for (const fence of speedGeofences) {
-    const isInside = geofenceCache.isInside(fence.name, data);
+    // const isInside = geofenceCache.isInside(fence.name, data);
+    const isInside = data.geofences?.[fence.name] || false
     const fenceAlertMinimum = fence.speedPreLimit || 0;
     const fenceSpeedLimit = Number(fence.speedLimit);
     if (isInside && speed >= fenceSpeedLimit) {
