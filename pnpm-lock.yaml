@@ -6,7 +6,7 @@ specifiers:
   '@babel/preset-env': 7.20.2
   '@babel/preset-typescript': 7.21.0
   '@fermuch/monoutils': 0.2.0
-  '@fermuch/telematree': 11.10.0
+  '@fermuch/telematree': 12.5.0
   '@jsdevtools/version-bump-prompt': 6.1.0
   '@size-limit/preset-big-lib': 8.2.4
   '@turf/boolean-point-in-polygon': ^6.5.0
@@ -42,7 +42,7 @@ specifiers:
 
 dependencies:
   '@fermuch/monoutils': 0.2.0_f3jz2ftm64jb4f3djnczbknfuu
-  '@fermuch/telematree': 11.10.0_f3jz2ftm64jb4f3djnczbknfuu
+  '@fermuch/telematree': 12.5.0_f3jz2ftm64jb4f3djnczbknfuu
   '@turf/boolean-point-in-polygon': 6.5.0
   '@turf/helpers': 6.5.0
   cross-fetch: 3.1.5
@@ -1351,8 +1351,8 @@ packages:
       - mobx-keystone
     dev: false
 
-  /@fermuch/telematree/11.10.0_f3jz2ftm64jb4f3djnczbknfuu:
-    resolution: {integrity: sha512-rtYJKLAanNo5kxsYR8+OBHxBD7fmR0AjvdBS2f/SBDfnAGvkUWL0Trmu69UQZoPwi9F+QRgtin0dYxI/eSGKBA==}
+  /@fermuch/telematree/12.5.0_f3jz2ftm64jb4f3djnczbknfuu:
+    resolution: {integrity: sha512-WXvg8VgwHEVW7mDdwj7c22g9q6VlKYkLDMz43iGr1KHvZi6FnxzhEDes5r5nlsFEUwBrTygytFlGsDO8qW4HyA==}
     peerDependencies:
       cross-fetch: ^3.1.5
       mobx: ^6.4.2
