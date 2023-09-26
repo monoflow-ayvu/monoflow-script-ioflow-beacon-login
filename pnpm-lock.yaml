@@ -71,8 +71,8 @@ devDependencies:
     specifier: 9.0.4
     version: 9.0.4
   '@types/wellknown':
-    specifier: 0.5.5
-    version: 0.5.5
+    specifier: 0.5.6
+    version: 0.5.6
   babel-loader:
     specifier: 9.1.3
     version: 9.1.3(@babel/core@7.22.20)(webpack@5.88.2)
@@ -2525,8 +2525,8 @@ packages:
     resolution: {integrity: sha512-zAuJWQflfx6dYJM62vna+Sn5aeSWhh3OB+wfUEACNcqUSc0AGc5JKl+ycL1vrH7frGTXhJchYjE1Hak8L819dA==}
     dev: true
 
-  /@types/wellknown@0.5.5:
-    resolution: {integrity: sha512-dlG6+Tm5Wkt5YKuECshk1K0qaA6AQ3epSuRXNw9BCzu5gBnMBjg54A7sWd0mpY6gntX3DPjCVcI1lrzlMaxeKg==}
+  /@types/wellknown@0.5.6:
+    resolution: {integrity: sha512-58IXUDbwcfROJXAfndscEX3CpdQfCrypxo2lRDZ0oO05GfcTHrXPbDdWNZ4ipBXi/LHB55RynQXzDDET5zuisg==}
     dev: true
 
   /@types/yargs-parser@21.0.0:
