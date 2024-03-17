@@ -50,8 +50,8 @@ devDependencies:
     specifier: 6.1.0
     version: 6.1.0
   '@size-limit/preset-big-lib':
-    specifier: 11.0.3
-    version: 11.0.3(size-limit@11.0.2)(webpack-cli@5.1.4)
+    specifier: 11.1.1
+    version: 11.1.1(size-limit@11.0.2)(webpack-cli@5.1.4)
   '@types/commander':
     specifier: 2.12.2
     version: 2.12.2
@@ -2352,23 +2352,23 @@ packages:
       - supports-color
     dev: true
 
-  /@size-limit/file@11.0.3(size-limit@11.0.2):
-    resolution: {integrity: sha512-fuVZG+dZLLMaEi1siHHK5gU8Vfc4pvjZBxrefwZt9gOinbOgGONauEPZYipaE1tYTZPeJo8o9PuJ8Obbub+MLA==}
+  /@size-limit/file@11.1.1(size-limit@11.0.2):
+    resolution: {integrity: sha512-c4XXp2CLvfx2RfzAqIAlxV6OWAQSVquLMNKKD6x9urJD7knjnTesPkbMcf3SkQbjCY4PlLL6kYhaO9drCWGM6g==}
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
-      size-limit: 11.0.3
+      size-limit: 11.1.1
     dependencies:
       size-limit: 11.0.2
     dev: true
 
-  /@size-limit/preset-big-lib@11.0.3(size-limit@11.0.2)(webpack-cli@5.1.4):
-    resolution: {integrity: sha512-nMHhbEMAu4b7YZFKiahaNqtAckY020bq/0Gy4oI38ELL8prsj9tgHJKcO5DwesoUR+GcUF95ZvivPrKveI++bw==}
+  /@size-limit/preset-big-lib@11.1.1(size-limit@11.0.2)(webpack-cli@5.1.4):
+    resolution: {integrity: sha512-AoHaRSEZrBbU+52e1/v3Dke/2ZsNP/4h0yNi6GD23QBetV9mc0GPFEJoKXNNU9guIQ8PX/2aTP8XdxEtMvHQOw==}
     peerDependencies:
-      size-limit: 11.0.3
+      size-limit: 11.1.1
     dependencies:
-      '@size-limit/file': 11.0.3(size-limit@11.0.2)
-      '@size-limit/time': 11.0.3(size-limit@11.0.2)
-      '@size-limit/webpack': 11.0.3(size-limit@11.0.2)(webpack-cli@5.1.4)
+      '@size-limit/file': 11.1.1(size-limit@11.0.2)
+      '@size-limit/time': 11.1.1(size-limit@11.0.2)
+      '@size-limit/webpack': 11.1.1(size-limit@11.0.2)(webpack-cli@5.1.4)
       size-limit: 11.0.2
     transitivePeerDependencies:
       - '@swc/core'
@@ -2381,11 +2381,11 @@ packages:
       - webpack-cli
     dev: true
 
-  /@size-limit/time@11.0.3(size-limit@11.0.2):
-    resolution: {integrity: sha512-HBwpOS1gV/IPu24NUnqaxwomG92W//aydrpQQbY7aHy9YCxZpeDyqTeLdQ1vQcb2zqvhGok4oKgladQlPsQhmw==}
+  /@size-limit/time@11.1.1(size-limit@11.0.2):
+    resolution: {integrity: sha512-98NFOo4ZxNC2r1ctsFz7OO2Sf4ly47o93KpzNoAu1jEjgorbiVZAjOjg9n7OiVoSHi71NXl89p/r0USGT8Jx8A==}
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
-      size-limit: 11.0.3
+      size-limit: 11.1.1
     dependencies:
       estimo: 3.0.2
       size-limit: 11.0.2
@@ -2396,11 +2396,11 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@size-limit/webpack@11.0.3(size-limit@11.0.2)(webpack-cli@5.1.4):
-    resolution: {integrity: sha512-yNISeEtCG0FC9uA0RDa/u/BhFN2h6aYDei8BknNpGZkcD6JEA+FKBRMhwcykivyeUJmC6bYVFQMhFDq496P36A==}
+  /@size-limit/webpack@11.1.1(size-limit@11.0.2)(webpack-cli@5.1.4):
+    resolution: {integrity: sha512-fjVKrUkNro6ooGPjce1SWgo3KS+Cgp1rAf73YhK1YP15s0UgxQYQru319b4R/t5xsRru2GkvAVI/xJLnv5kX0A==}
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
-      size-limit: 11.0.3
+      size-limit: 11.1.1
     dependencies:
       nanoid: 5.0.6
       size-limit: 11.0.2
