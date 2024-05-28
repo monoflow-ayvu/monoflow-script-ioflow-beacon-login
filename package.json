@@ -95,7 +95,7 @@
     "@types/wellknown": "0.5.8",
     "babel-loader": "9.1.3",
     "brotli-webpack-plugin": "1.1.0",
-    "commander": "12.0.0",
+    "commander": "12.1.0",
     "compression-webpack-plugin": "11.1.0",
     "graphql": "16.8.1",
     "graphql-request": "6.1.0",
